@@ -1,5 +1,10 @@
 <script setup lang="ts">
 import { RouterLink, useRoute } from "vue-router";
+import { useAuthStore } from "@/modules/auth/stores/auth";
+import { computed } from "vue";
+const authStore = useAuthStore();
+
+const esProfesional = computed(() => authStore.user?.role === "profesional");
 
 const route = useRoute();
 
@@ -8,11 +13,6 @@ const isActive = (path: string) => route.path === path;
 
 <template>
   <aside class="sidebar">
-    <!-- BRAND -->
-    <div class="brand">
-      <h1>Panel</h1>
-    </div>
-
     <!-- PRINCIPAL -->
     <div class="section">
       <p class="section-title">PRINCIPAL</p>
@@ -23,13 +23,21 @@ const isActive = (path: string) => route.path === path;
         </li>
 
         <li>
-          <RouterLink to="/reservas" class="item" :class="{ active: isActive('/reservas') }">
+          <RouterLink
+            to="/app/reservas"
+            class="item"
+            :class="{ active: isActive('/app/reservas') }"
+          >
             Reservas
           </RouterLink>
         </li>
 
         <li>
-          <RouterLink to="/clientes" class="item" :class="{ active: isActive('/clientes') }">
+          <RouterLink
+            to="/app/clientes"
+            class="item"
+            :class="{ active: isActive('/app/clientes') }"
+          >
             Clientes
           </RouterLink>
         </li>
@@ -42,13 +50,13 @@ const isActive = (path: string) => route.path === path;
 
       <ul class="menu">
         <li>
-          <RouterLink to="/servicios" class="item">Servicios</RouterLink>
+          <RouterLink to="/app/servicios" class="item">Servicios</RouterLink>
         </li>
         <li>
-          <RouterLink to="/paquetes" class="item">Paquetes</RouterLink>
+          <RouterLink to="/app/paquetes" class="item">Paquetes</RouterLink>
         </li>
         <li>
-          <RouterLink to="/disponibilidad" class="item">Disponibilidad</RouterLink>
+          <RouterLink to="/app/disponibilidad" class="item">Disponibilidad</RouterLink>
         </li>
       </ul>
     </div>
@@ -58,18 +66,18 @@ const isActive = (path: string) => route.path === path;
       <p class="section-title">CUENTA</p>
 
       <ul class="menu">
-        <li>
-          <RouterLink to="/perfil" class="item" :class="{ active: isActive('/perfil') }">
+        <li v-if="esProfesional">
+          <RouterLink to="/app/perfil" class="item" :class="{ active: isActive('/app/perfil') }">
             Perfil
           </RouterLink>
         </li>
 
         <li>
-          <RouterLink to="/resenas" class="item">Reseñas</RouterLink>
+          <RouterLink to="/app/resenas" class="item">Reseñas</RouterLink>
         </li>
 
         <li>
-          <RouterLink to="/configuracion" class="item">Configuración</RouterLink>
+          <RouterLink to="/app/configuracion" class="item">Configuración</RouterLink>
         </li>
       </ul>
     </div>
@@ -90,27 +98,6 @@ const isActive = (path: string) => route.path === path;
   font-family: Inter, system-ui, sans-serif;
 }
 
-/* BRAND */
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  margin-bottom: 10px;
-}
-
-.logo {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: #2563eb;
-}
-
-.brand h1 {
-  font-size: 16px;
-  margin: 0;
-}
-
 /* SECTIONS */
 .section {
   display: flex;
@@ -122,7 +109,7 @@ const isActive = (path: string) => route.path === path;
   font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #9ca3af;
+  color: #767a80;
   padding-left: 10px;
 }
 

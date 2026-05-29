@@ -3,6 +3,8 @@ import { useRouter } from "vue-router";
 import { loginRequest, registerRequest, meRequest } from "@/modules/auth/api/auth";
 import type { AxiosError } from "axios";
 
+import { useAuthStore } from "@/modules/auth/stores/auth";
+
 export function useAuth() {
   const router = useRouter();
   const loading = ref(false);
@@ -14,7 +16,8 @@ export function useAuth() {
     try {
       const data = await loginRequest({ email, password });
       localStorage.setItem("token", data.token);
-      await router.push("/dashboard"); // cambiá por tu ruta
+
+      await router.push("/app");
     } catch (e) {
       const err = e as AxiosError<{ message: string }>;
       error.value = err.response?.data?.message ?? "Error al iniciar sesión";
@@ -41,7 +44,11 @@ export function useAuth() {
         role: data.role,
       });
       localStorage.setItem("token", res.token);
-      await router.push("/dashboard");
+
+      const authStore = useAuthStore();
+      authStore.logout();
+
+      await router.push("/app");
     } catch (e) {
       const err = e as AxiosError<{ message: string }>;
       error.value = err.response?.data?.message ?? "Error al registrarse";

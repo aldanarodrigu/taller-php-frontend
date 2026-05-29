@@ -24,7 +24,7 @@ const router = createRouter({
           component: RegisterView,
         },
         {
-          path: "auth/callback",
+          path: "callback",
           component: () => import("@/modules/auth/views/GoogleCallback.vue"),
         },
       ],
@@ -38,10 +38,30 @@ const router = createRouter({
         {
           path: "perfil",
           component: PerfilView,
+          name: "ProfileOwn",
+        },
+        {
+          path: "perfil/:id",
+          component: PerfilView,
+          name: "ProfileUser",
         },
       ],
     },
+
+    {
+      path: "/",
+      redirect: "/auth/login",
+    },
   ],
+});
+
+router.beforeEach((to) => {
+  const token = localStorage.getItem("token");
+  const isPublic = to.path.startsWith("/auth");
+
+  if (!isPublic && !token) {
+    return "/auth/login";
+  }
 });
 
 export default router;

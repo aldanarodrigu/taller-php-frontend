@@ -3,6 +3,7 @@ interface Profesional {
   descripcion?: string | null;
   profesion?: string | null;
   foto?: string | null;
+  puntuacion_promedio?: number | null;
 }
 
 interface User {
@@ -18,98 +19,161 @@ defineProps<{
   user: User;
   authUser: User | null;
 }>();
+
+defineEmits<{
+  edit: [];
+}>();
 </script>
 
 <template>
-  <div class="profile-header">
-    <div class="profile-header__content">
-      <img
-        :src="
-          user.profesional?.foto || user.foto || 'https://ui-avatars.com/api/?name=' + user.nombre
-        "
-        alt="Foto de perfil"
-        class="profile-header__avatar"
-      />
+  <div class="perfil-card">
+    <div class="perfil-top">
+      <div class="perfil-identity">
+        <img
+          :src="
+            user.profesional?.foto ||
+            user.foto ||
+            'https://ui-avatars.com/api/?name=' + user.nombre + '+' + user.apellido
+          "
+          :alt="user.nombre"
+          class="avatar"
+        />
+        <div>
+          <h2 class="nombre">{{ user.nombre }} {{ user.apellido }}</h2>
+          <p class="profesion">{{ user.profesional?.profesion || "Sin profesión" }}</p>
+        </div>
+      </div>
+      <button v-if="authUser?.id === user.id" class="edit-btn" @click="$emit('edit')">
+        Editar perfil
+      </button>
+    </div>
 
-      <div class="profile-header__info">
-        <h1 class="profile-header__name">{{ user.nombre }} {{ user.apellido }}</h1>
-
-        <h2 v-if="user.profesional?.profesion" class="profile-header__profession">
-          {{ user.profesional.profesion }}
-        </h2>
-
-        <p v-if="user.profesional?.descripcion" class="profile-header__description">
-          {{ user.profesional.descripcion }}
-        </p>
-
-        <p v-else-if="user.profesional" class="text-muted">
-          Este profesional aún no agregó una descripción.
-        </p>
+    <div class="stats">
+      <div class="stat">
+        <span class="stat-value">—</span>
+        <span class="stat-label">Reseñas</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value">{{ user.profesional?.puntuacion_promedio ?? "—" }}</span>
+        <span class="stat-label">Calificación</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value">—</span>
+        <span class="stat-label">Sesiones</span>
       </div>
     </div>
 
-    <button v-if="authUser?.id === user.id" class="edit-button">Editar perfil</button>
+    <div v-if="user.profesional" class="sobre-mi">
+      <h3 class="sobre-mi-title">Sobre mí</h3>
+      <p class="sobre-mi-text">
+        {{ user.profesional.descripcion || "Este profesional aún no agregó una descripción." }}
+      </p>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.profile-header {
+.perfil-card {
+  background: var(--color-background-primary, white);
+  border: 0.5px solid var(--color-border-tertiary, #e5e7eb);
+  border-radius: 5px;
+  padding: 1.5rem;
   display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.perfil-top {
+  display: flex;
+  align-items: flex-start;
   justify-content: space-between;
-  align-items: center;
-  gap: 2rem;
-
-  padding: 2rem;
-  border-radius: 12px;
-  background: white;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
-.profile-header__content {
+.perfil-identity {
   display: flex;
-  align-items: center;
-  gap: 1.5rem;
+  align-items: flex-start; /* clave */
+  gap: 1rem;
 }
 
-.profile-header__avatar {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
+.avatar {
+  width: 150px;
+  height: 150px;
+  border-radius: 0px;
   object-fit: cover;
 }
 
-.profile-header__info {
+.nombre {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.profesion {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.edit-btn {
+  padding: 8px 20px;
+  border-radius: 5px;
+  border: 0.5px solid #d1d5db;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: #374151;
+  transition: background 0.2s;
+}
+
+.edit-btn:hover {
+  background: #f3f4f6;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.stat {
+  padding: 1rem;
+  text-align: center;
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 4px;
+  border-right: 0.5px solid #e5e7eb;
 }
 
-.profile-header__name {
-  margin: 0;
-  font-size: 1.8rem;
+.stat:last-child {
+  border-right: none;
 }
 
-.profile-header__profession {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
+.stat-value {
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: #1a1a1a;
 }
 
-.profile-header__description {
-  margin: 0;
-  margin-top: 0.3rem;
-}
-
-.text-muted {
+.stat-label {
+  font-size: 0.75rem;
   color: #6b7280;
-  margin: 0;
 }
 
-.edit-button {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  background: #2563eb;
-  color: white;
+.sobre-mi-title {
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.sobre-mi-text {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+  line-height: 1.6;
 }
 </style>
