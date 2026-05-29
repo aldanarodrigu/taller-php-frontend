@@ -1,0 +1,22 @@
+import { http } from "@/modules/auth/api/http";
+
+export const loginRequest = async (data: { email: string; password: string }) => {
+  const res = await http.post("/api/login", data);
+  return res.data; // token
+};
+
+export const registerRequest = async (data: {
+  nombre: string;
+  apellido: string;
+  email: string;
+  password: string;
+  role: string;
+}) => {
+  const res = await http.post("/api/registrar", data);
+  return res.data;
+};
+
+export const meRequest = async () => {
+  const res = await http.get("/api/me");
+  return res.data; // datos del usuario autenticado
+};
