@@ -58,7 +58,7 @@ onMounted(async () => {
 .servicios-card {
   background: white;
   border: 0.5px solid #e5e7eb;
-  border-radius: 5px;
+  border-radius: 10px;
   padding: 1.5rem;
 }
 
@@ -109,3 +109,6 @@ onMounted(async () => {
   color: #6b7280;
 }
 </style>
+
+@media (max-width: 768px) { .servicios-card { padding: 1rem; } .item { flex-direction: column;
+align-items: flex-start; gap: 4px; padding: 0.75rem 0; } .precio { font-size: 0.8rem; } }

@@ -76,7 +76,7 @@ defineEmits<{
 .perfil-card {
   background: var(--color-background-primary, white);
   border: 0.5px solid var(--color-border-tertiary, #e5e7eb);
-  border-radius: 5px;
+  border-radius: 10px;
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
@@ -100,7 +100,7 @@ defineEmits<{
 .avatar {
   width: 150px;
   height: 150px;
-  border-radius: 5px;
+  border-radius: 10px;
   object-fit: cover;
 
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.027);
@@ -121,17 +121,17 @@ defineEmits<{
 
 .edit-btn {
   padding: 8px 20px;
-  border-radius: 5px;
-  border: 1.7px solid #2563eb;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
   background: transparent;
   cursor: pointer;
   font-size: 0.875rem;
-  color: #2563eb;
+  color: #374151;
   transition: background 0.2s;
 }
 
 .edit-btn:hover {
-  background: #2564eb13;
+  background: #f3f4f6;
 }
 
 .stats {
@@ -179,3 +179,8 @@ defineEmits<{
   line-height: 1.6;
 }
 </style>
+
+@media (max-width: 768px) { .perfil-card { padding: 1rem; } .perfil-top { flex-direction: column;
+align-items: flex-start; } .perfil-identity { flex-direction: column; align-items: center; width:
+100%; text-align: center; } .avatar { width: 100px; height: 100px; } .edit-btn { width: 100%; }
+.stats { grid-template-columns: 1fr 1fr 1fr; } .stat-value { font-size: 1.1rem; } }

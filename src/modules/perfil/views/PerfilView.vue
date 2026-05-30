@@ -76,18 +76,6 @@ const handleEditProfile = () => {
 </template>
 
 <style scoped>
-.app-layout {
-  display: flex;
-  min-height: 100vh;
-}
-
-.main-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 2rem;
-  background-color: #e0f2fe6c;
-}
-
 .perfil-view {
   background-color: #f5f8ff;
   min-height: 100%;
@@ -121,3 +109,5 @@ const handleEditProfile = () => {
   cursor: pointer;
 }
 </style>
+
+@media (max-width: 768px) { .perfil-view { padding: 1rem; } .perfil-contenido { gap: 0.75rem; } }
