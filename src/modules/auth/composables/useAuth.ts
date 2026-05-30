@@ -59,6 +59,9 @@ export function useAuth() {
 
       localStorage.setItem("token", res.token);
 
+      authStore.user = null;
+      authStore.loaded = false;
+
       await authStore.fetchUser();
 
       await router.push("/app");
@@ -75,7 +78,7 @@ export function useAuth() {
 
     authStore.logout();
 
-    router.push("/login");
+    router.push("/auth/login");
   };
 
   const me = async () => {

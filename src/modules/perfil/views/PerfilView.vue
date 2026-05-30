@@ -18,7 +18,10 @@ const loadProfile = async () => {
   try {
     loading.value = true;
     error.value = null;
-    await authStore.fetchUser();
+
+    if (!authStore.user) {
+      await authStore.fetchUser();
+    }
 
     if (authStore.user?.role === "cliente") {
       router.push("/app/configuracion");
@@ -26,6 +29,7 @@ const loadProfile = async () => {
     }
 
     const id = route.params.id as string | undefined;
+
     if (id) {
       const res = await http.get(`/api/usuarios/${id}`);
       profileUser.value = res.data;

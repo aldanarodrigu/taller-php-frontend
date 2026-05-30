@@ -27,6 +27,7 @@ export const useAuthStore = defineStore("auth", {
 
   actions: {
     async fetchUser() {
+      console.log("fetchUser", this.loaded);
       if (this.loaded) return this.user;
 
       try {
