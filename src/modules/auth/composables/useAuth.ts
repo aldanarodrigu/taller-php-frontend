@@ -16,8 +16,18 @@ export function useAuth() {
     loading.value = true;
     error.value = null;
     try {
+      const authStore = useAuthStore();
+
       const data = await loginRequest({ email, password });
+
       localStorage.setItem("token", data.token);
+
+      // limpiar usuario anterior
+      authStore.user = null;
+      authStore.loaded = false;
+
+      // cargar usuario nuevo
+      await authStore.fetchUser();
 
       await router.push("/app");
     } catch (e) {
@@ -45,10 +55,11 @@ export function useAuth() {
         password: data.password,
         role: data.role,
       });
+      const authStore = useAuthStore();
+
       localStorage.setItem("token", res.token);
 
-      const authStore = useAuthStore();
-      authStore.logout();
+      await authStore.fetchUser();
 
       await router.push("/app");
     } catch (e) {
@@ -60,7 +71,10 @@ export function useAuth() {
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
+    const authStore = useAuthStore();
+
+    authStore.logout();
+
     router.push("/login");
   };
 

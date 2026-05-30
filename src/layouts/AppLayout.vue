@@ -6,7 +6,11 @@ import { onMounted } from "vue";
 const authStore = useAuthStore();
 
 onMounted(async () => {
-  await authStore.fetchUser(); //carga el usuario al montar el layout
+  const token = localStorage.getItem("token");
+
+  if (token && !authStore.loaded) {
+    await authStore.fetchUser();
+  }
 });
 </script>
 

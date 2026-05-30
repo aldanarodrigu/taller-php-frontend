@@ -20,28 +20,37 @@ interface User {
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
-    user: null as User | null,
-    loaded: false,
+    user: JSON.parse(localStorage.getItem("user") || "null") as User | null,
+    loaded: !!localStorage.getItem("user"),
     error: null as string | null,
   }),
+
   actions: {
     async fetchUser() {
       if (this.loaded) return this.user;
+
       try {
         const res = await http.get("/api/me");
+
         this.user = res.data;
         localStorage.setItem("user", JSON.stringify(res.data));
+
         this.error = null;
-      } catch (err) {
-        this.error = "No autorizado";
+      } catch {
         this.user = null;
+        localStorage.removeItem("user");
+        this.error = "No autorizado";
       }
+
       this.loaded = true;
       return this.user;
     },
+
     logout() {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
+
+      this.user = null;
       this.loaded = false;
       this.error = null;
     },
