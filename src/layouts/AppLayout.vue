@@ -5,15 +5,15 @@ import { onMounted } from "vue";
 
 const authStore = useAuthStore();
 
-onMounted(() => {
-  authStore.fetchUser(); //carga el usuario al montar el layout
+onMounted(async () => {
+  await authStore.fetchUser(); //carga el usuario al montar el layout
 });
 </script>
 
 <template>
   <div class="app-layout">
     <Sidebar />
-    <main>
+    <main class="main-content">
       <RouterView />
     </main>
   </div>
@@ -23,6 +23,7 @@ onMounted(() => {
 .app-layout {
   display: flex;
   min-height: 100vh;
+  background-color: #e0f2fe6c;
 }
 
 .main-content {

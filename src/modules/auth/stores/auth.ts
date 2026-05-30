@@ -1,3 +1,4 @@
+/*el estado global del usuario logueado (Pinia). Guarda el objeto user y lo cachea para no pedir /api/me en cada página*/
 import { defineStore } from "pinia";
 import { http } from "@/modules/auth/api/http";
 

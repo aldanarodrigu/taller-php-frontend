@@ -1,3 +1,5 @@
+/*la lógica del login/register/logout que usan los componentes. Llama a las funciones de api/auth.ts, guarda el token y navega*/
+
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { loginRequest, registerRequest, meRequest } from "@/modules/auth/api/auth";

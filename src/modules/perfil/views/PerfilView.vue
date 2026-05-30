@@ -3,28 +3,13 @@ import { ref, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/modules/auth/stores/auth";
 import PerfilHeader from "@/modules/perfil/components/PerfilHeader.vue";
+import PerfilServicios from "@/modules/perfil/components/PerfilServices.vue";
 import { http } from "@/modules/auth/api/http";
-
-interface Profesional {
-  descripcion?: string | null;
-  profesion?: string | null;
-  foto?: string | null;
-}
-
-interface User {
-  id: number;
-  nombre: string;
-  apellido: string;
-  email: string;
-  role: "profesional" | "cliente";
-  foto?: string | null;
-  profesional?: Profesional;
-}
+import type { User } from "@/types";
 
 const authStore = useAuthStore();
 const route = useRoute();
 const router = useRouter();
-
 const profileUser = ref<User | null>(null);
 const loading = ref(!authStore.loaded && !authStore.user);
 const error = ref<string | null>(null);
@@ -33,7 +18,6 @@ const loadProfile = async () => {
   try {
     loading.value = true;
     error.value = null;
-
     await authStore.fetchUser();
 
     if (authStore.user?.role === "cliente") {
@@ -60,7 +44,6 @@ onMounted(() => {
   loadProfile();
 });
 
-// Recargar cuando cambia la ruta
 watch(
   () => route.params.id,
   () => {
@@ -78,21 +61,42 @@ const handleEditProfile = () => {
     <div v-if="loading" class="loading">
       <p>Cargando perfil...</p>
     </div>
-
     <div v-else-if="error" class="error">
       <p>{{ error }}</p>
       <button @click="$router.back()">Volver</button>
     </div>
-
-    <div v-else-if="profileUser">
+    <div v-else-if="profileUser" class="perfil-contenido">
       <PerfilHeader :user="profileUser" :auth-user="authStore.user" @edit="handleEditProfile" />
+      <PerfilServicios
+        :profesional-id="profileUser.profesional?.id"
+        :es-propietario="authStore.user?.id === profileUser.id"
+      />
     </div>
   </div>
 </template>
 
 <style scoped>
-.perfil-view {
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  overflow-y: auto;
   padding: 2rem;
+  background-color: #e0f2fe6c;
+}
+
+.perfil-view {
+  background-color: #f5f8ff;
+  min-height: 100%;
+}
+
+.perfil-contenido {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .loading,

@@ -1,3 +1,7 @@
+/*crea la instancia de axios configurada con la base URL
+y el interceptor que agrega el token Bearer en cada request automáticamente. 
+También redirige al login si recibe un 401.*/
+
 import axios from "axios";
 
 export const http = axios.create({

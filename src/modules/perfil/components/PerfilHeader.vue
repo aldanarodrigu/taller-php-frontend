@@ -33,7 +33,7 @@ defineEmits<{
           :src="
             user.profesional?.foto ||
             user.foto ||
-            'https://ui-avatars.com/api/?name=' + user.nombre + '+' + user.apellido
+            `https://ui-avatars.com/api/?name=${user.nombre}+${user.apellido}&background=2563eb&color=fff`
           "
           :alt="user.nombre"
           class="avatar"
@@ -100,8 +100,10 @@ defineEmits<{
 .avatar {
   width: 150px;
   height: 150px;
-  border-radius: 0px;
+  border-radius: 5px;
   object-fit: cover;
+
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.027);
 }
 
 .nombre {
@@ -120,16 +122,16 @@ defineEmits<{
 .edit-btn {
   padding: 8px 20px;
   border-radius: 5px;
-  border: 0.5px solid #d1d5db;
+  border: 1.7px solid #2563eb;
   background: transparent;
   cursor: pointer;
   font-size: 0.875rem;
-  color: #374151;
+  color: #2563eb;
   transition: background 0.2s;
 }
 
 .edit-btn:hover {
-  background: #f3f4f6;
+  background: #2564eb13;
 }
 
 .stats {

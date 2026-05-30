@@ -1,3 +1,5 @@
+/*las funciones que llaman a la API: loginRequest, registerRequest, meRequest. Usan el axios de http.ts.*/
+
 import { http } from "@/modules/auth/api/http";
 
 export const loginRequest = async (data: { email: string; password: string }) => {
