@@ -55,6 +55,11 @@ const router = createRouter({
           component: () => import("@/modules/servicios/views/MisServiciosView.vue"),
           name: "MisServicios",
         },
+        {
+          path: "paquetes",
+          component: () => import("@/modules/paquetes/views/PaquetesView.vue"),
+          name: "Paquetes",
+        },
       ],
     },
 
