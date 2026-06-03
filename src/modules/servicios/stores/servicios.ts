@@ -4,9 +4,9 @@ import { serviciosApi } from "@/modules/servicios/api/servicios";
 
 export const useServiciosStore = defineStore("servicios", () => {
   const servicios = ref<any[]>([]);
-  const servicio = ref(null);
+  const servicio = ref<any | null>(null);
   const cargando = ref(false);
-  const error = ref(null);
+  const error = ref<string | null>(null);
 
   async function listar(filtros?: object) {
     cargando.value = true;
