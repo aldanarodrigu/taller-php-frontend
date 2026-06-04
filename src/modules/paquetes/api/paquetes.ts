@@ -2,14 +2,14 @@ import { http } from "@/modules/auth/api/http";
 
 export const paquetesApi = {
   listar() {
-    return http.get("/api/packages");
+    return http.get("/packages");
   },
 
   obtener(id: number) {
-    return http.get(`/api/packages/${id}`);
+    return http.get(`/packages/${id}`);
   },
 
   comprar(id: number) {
-    return http.post(`/api/packages/${id}/comprar`);
+    return http.post(`/packages/${id}/comprar`);
   },
 };
