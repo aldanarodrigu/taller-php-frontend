@@ -6,18 +6,18 @@ export const serviciosApi = {
     modalidad?: string;
     precio_max?: number;
   }) {
-    return http.get("/api/services", { params: filtros });
+    return http.get("/services", { params: filtros });
   },
 
   obtener(id: number) {
-    return http.get(`/api/services/${id}`);
+    return http.get(`/services/${id}`);
   },
 
   coordenadas(id: number) {
-    return http.get(`/api/services/${id}/coordenadas`);
+    return http.get(`/services/${id}/coordenadas`);
   },
 
   reseñas(id: number) {
-    return http.get(`/api/services/${id}/reviews`);
+    return http.get(`/services/${id}/reviews`);
   },
 };
