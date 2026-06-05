@@ -178,9 +178,33 @@ defineEmits<{
   color: #6b7280;
   line-height: 1.6;
 }
-</style>
 
-@media (max-width: 768px) { .perfil-card { padding: 1rem; } .perfil-top { flex-direction: column;
-align-items: flex-start; } .perfil-identity { flex-direction: column; align-items: center; width:
-100%; text-align: center; } .avatar { width: 100px; height: 100px; } .edit-btn { width: 100%; }
-.stats { grid-template-columns: 1fr 1fr 1fr; } .stat-value { font-size: 1.1rem; } }
+@media (max-width: 768px) {
+  .perfil-card {
+    padding: 1rem;
+  }
+  .perfil-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .perfil-identity {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    text-align: center;
+  }
+  .avatar {
+    width: 100px;
+    height: 100px;
+  }
+  .edit-btn {
+    width: 100%;
+  }
+  .stats {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+  .stat-value {
+    font-size: 1.1rem;
+  }
+}
+</style>

@@ -46,6 +46,11 @@ const router = createRouter({
           name: "ProfileUser",
         },
         {
+          path: "perfil/editar",
+          name: "ProfileEdit",
+          component: () => import("@/modules/perfil/components/PerfilEditar.vue"),
+        },
+        {
           path: "servicios",
           component: () => import("@/modules/servicios/views/ServiciosView.vue"),
           name: "Servicios",
@@ -59,6 +64,35 @@ const router = createRouter({
           path: "paquetes",
           component: () => import("@/modules/paquetes/views/PaquetesView.vue"),
           name: "Paquetes",
+        },
+        {
+          path: "reservas",
+          name: "Reservas",
+          component: { template: '<div style="padding:2rem">Reservas — en construcción</div>' },
+        },
+        {
+          path: "clientes",
+          name: "Clientes",
+          component: { template: '<div style="padding:2rem">Clientes — en construcción</div>' },
+        },
+        {
+          path: "disponibilidad",
+          name: "Disponibilidad",
+          component: {
+            template: '<div style="padding:2rem">Disponibilidad — en construcción</div>',
+          },
+        },
+        {
+          path: "resenas",
+          name: "Resenas",
+          component: { template: '<div style="padding:2rem">Reseñas — en construcción</div>' },
+        },
+        {
+          path: "configuracion",
+          name: "Configuracion",
+          component: {
+            template: '<div style="padding:2rem">Configuración — en construcción</div>',
+          },
         },
       ],
     },

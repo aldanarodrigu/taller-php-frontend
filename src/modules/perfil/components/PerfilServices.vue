@@ -24,8 +24,8 @@ onMounted(async () => {
   try {
     // Si es el propio usuario usá /me, si es otro usá el filtro
     const url = props.esPropietario
-      ? "/api/services/me"
-      : `/api/services?profesional_id=${props.profesionalId}`;
+      ? "/services/me"
+      : `/services?profesional_id=${props.profesionalId}`;
 
     const res = await http.get(url);
     servicios.value = res.data;

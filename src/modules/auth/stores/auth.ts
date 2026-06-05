@@ -15,7 +15,7 @@ export const useAuthStore = defineStore("auth", {
       if (this.loaded) return this.user;
 
       try {
-        const res = await http.get("/api/me");
+        const res = await http.get("/me");
 
         this.user = res.data;
         localStorage.setItem("user", JSON.stringify(res.data));
@@ -29,6 +29,11 @@ export const useAuthStore = defineStore("auth", {
 
       this.loaded = true;
       return this.user;
+    },
+
+    async refreshUser() {
+      this.loaded = false;
+      return this.fetchUser();
     },
 
     logout() {
