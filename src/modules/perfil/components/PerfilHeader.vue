@@ -77,7 +77,7 @@ defineEmits<{
   background: var(--color-background-primary, white);
   border: 0.5px solid var(--color-border-tertiary, #e5e7eb);
   border-radius: 10px;
-  padding: 1.5rem;
+  padding: 2rem;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
@@ -93,22 +93,22 @@ defineEmits<{
 
 .perfil-identity {
   display: flex;
-  align-items: flex-start; /* clave */
-  gap: 1rem;
+  align-items: flex-start;
+  gap: 2rem;
 }
 
 .avatar {
-  width: 150px;
-  height: 150px;
-  border-radius: 10px;
+  width: 250px;
+  height: 250px;
+  border-radius: 0px;
   object-fit: cover;
 
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.027);
 }
 
 .nombre {
-  margin: 0 0 4px;
-  font-size: 1.1rem;
+  margin: 1 1 1px;
+  font-size: 1.5rem;
   font-weight: 500;
   color: #1a1a1a;
 }
@@ -194,8 +194,9 @@ defineEmits<{
     text-align: center;
   }
   .avatar {
-    width: 100px;
-    height: 100px;
+    width: 250px;
+    height: 250px;
+    border-radius: 10%;
   }
   .edit-btn {
     width: 100%;
