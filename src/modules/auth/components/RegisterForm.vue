@@ -30,7 +30,7 @@ const handleRegister = async () => {
 };
 
 const handleLoginRedirect = () => {
-  window.location.href = "/login";
+  window.location.href = "/auth/login";
 };
 </script>
 

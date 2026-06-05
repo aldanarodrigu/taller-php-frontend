@@ -14,7 +14,6 @@ const cerrarMenu = () => (menuAbierto.value = false);
 </script>
 
 <template>
-  <!-- BOTÓN HAMBURGUESA (solo mobile) -->
   <button class="hamburger" @click="toggleMenu" :class="{ open: menuAbierto }">
     <span></span>
     <span></span>
@@ -63,9 +62,6 @@ const cerrarMenu = () => (menuAbierto.value = false);
       <ul class="menu">
         <li>
           <RouterLink to="/app/servicios" class="item" @click="cerrarMenu">Servicios</RouterLink>
-        </li>
-        <li v-if="esProfesional">
-          <RouterLink to="/app/mis-servicios" class="item" @click="cerrarMenu">Mis Servicios</RouterLink>
         </li>
         <li>
           <RouterLink to="/app/paquetes" class="item" @click="cerrarMenu">Paquetes</RouterLink>

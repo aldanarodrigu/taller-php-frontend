@@ -44,7 +44,7 @@ const handleLogin = async () => await login(email.value, password.value);
 
         <p class="register-text">
           ¿No tienes cuenta?
-          <RouterLink to="/register">Regístrate</RouterLink>
+          <RouterLink to="/auth/register">Regístrate</RouterLink>
         </p>
       </div>
     </div>
