@@ -3,7 +3,7 @@
 import { http } from "@/modules/auth/api/http";
 
 export const loginRequest = async (data: { email: string; password: string }) => {
-  const res = await http.post("/api/login", data);
+  const res = await http.post("/login", data);
   return res.data; // token
 };
 
@@ -14,11 +14,11 @@ export const registerRequest = async (data: {
   password: string;
   role: string;
 }) => {
-  const res = await http.post("/api/registrar", data);
+  const res = await http.post("/registrar", data);
   return res.data;
 };
 
 export const meRequest = async () => {
-  const res = await http.get("/api/me");
+  const res = await http.get("/me");
   return res.data; // datos del usuario autenticado
 };

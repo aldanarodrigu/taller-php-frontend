@@ -1,22 +1,7 @@
 /*el estado global del usuario logueado (Pinia). Guarda el objeto user y lo cachea para no pedir /api/me en cada página*/
 import { defineStore } from "pinia";
 import { http } from "@/modules/auth/api/http";
-
-interface Profesional {
-  descripcion?: string | null;
-  profesion?: string | null;
-  foto?: string | null;
-}
-
-interface User {
-  id: number;
-  nombre: string;
-  apellido: string;
-  email: string;
-  role: "profesional" | "cliente";
-  foto?: string | null;
-  profesional?: Profesional;
-}
+import type { User } from "@/types";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
