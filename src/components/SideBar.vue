@@ -29,6 +29,16 @@ const cerrarMenu = () => (menuAbierto.value = false);
       <p class="section-title">PRINCIPAL</p>
       <ul class="menu">
         <li>
+          <RouterLink
+            to="/app/home"
+            class="item"
+            :class="{ active: isActive('/') }"
+            @click="cerrarMenu"
+          >
+            Inicio
+          </RouterLink>
+        </li>
+        <li>
           <RouterLink to="/" class="item" :class="{ active: isActive('/') }" @click="cerrarMenu">
             Resumen
           </RouterLink>

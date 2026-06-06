@@ -36,6 +36,11 @@ const router = createRouter({
       component: AppLayout,
       children: [
         {
+          path: "home",
+          name: "Home",
+          component: () => import("@/modules/home/views/HomeView.vue"),
+        },
+        {
           path: "perfil",
           component: PerfilView,
           name: "ProfileOwn",

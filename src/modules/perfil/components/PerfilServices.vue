@@ -22,7 +22,6 @@ const error = ref<string | null>(null);
 
 onMounted(async () => {
   try {
-    // Si es el propio usuario usá /me, si es otro usá el filtro
     const url = props.esPropietario
       ? "/services/me"
       : `/services?profesional_id=${props.profesionalId}`;
