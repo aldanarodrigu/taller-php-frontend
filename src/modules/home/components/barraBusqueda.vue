@@ -2,8 +2,10 @@
 import { ref } from "vue";
 
 const busqueda = ref("");
+const ubicacion = ref("");
 const modalidad = ref("");
 const categoriaActiva = ref("todos");
+
 const categorias = [
   { id: "todos", label: "Todos", icon: null },
   { id: "consultoria", label: "Consultoría", icon: "ti-briefcase" },

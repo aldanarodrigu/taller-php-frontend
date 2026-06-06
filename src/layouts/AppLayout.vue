@@ -27,11 +27,13 @@ onMounted(async () => {
 .app-layout {
   display: flex;
   min-height: 100vh;
-  background-color: #e0f2fe6c;
+  background-color: #e4fee06c;
 }
 
 .main-content {
   flex: 1;
+  margin-left: 240px;
+  min-height: 100vh;
   overflow-y: auto;
   padding: 2rem;
 }
