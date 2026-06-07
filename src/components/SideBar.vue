@@ -16,12 +16,16 @@ const navPrincipal = [
   { to: "/app/home", label: "Inicio" },
   { to: "/app/resumen", label: "Resumen" },
   { to: "/app/reservas", label: "Reservas", badge: 3 },
-  { to: "/app/clientes", label: "Clientes" },
+  { to: "/app/clientes", label: "Clientes", soloProfesional: true },
 ];
 
-const navGestion = [
+const navGestionCliente = [
   { to: "/app/servicios", label: "Servicios" },
   { to: "/app/paquetes", label: "Paquetes" },
+];
+
+const navGestionProfesional = [
+  { to: "/app/mis-servicios", label: "Mis Servicios" },
   { to: "/app/disponibilidad", label: "Disponibilidad" },
 ];
 
@@ -53,29 +57,45 @@ const navCuenta = [
     <!-- Nav -->
     <nav class="nav">
       <span class="section-label">Principal</span>
-      <RouterLink
-        v-for="item in navPrincipal"
-        :key="item.to"
-        :to="item.to"
-        class="nav-item"
-        :class="{ active: isActive(item.to) }"
-        @click="cerrarMenu"
-      >
-        {{ item.label }}
-        <span v-if="item.badge" class="badge-count">{{ item.badge }}</span>
-      </RouterLink>
+      <template v-for="item in navPrincipal" :key="item.to">
+        <RouterLink
+          v-if="!item.soloProfesional || esProfesional"
+          :to="item.to"
+          class="nav-item"
+          :class="{ active: isActive(item.to) }"
+          @click="cerrarMenu"
+        >
+          {{ item.label }}
+          <span v-if="item.badge" class="badge-count">{{ item.badge }}</span>
+        </RouterLink>
+      </template>
 
       <span class="section-label">Gestión</span>
-      <RouterLink
-        v-for="item in navGestion"
-        :key="item.to"
-        :to="item.to"
-        class="nav-item"
-        :class="{ active: isActive(item.to) }"
-        @click="cerrarMenu"
-      >
-        {{ item.label }}
-      </RouterLink>
+      <template v-if="!esProfesional">
+        <RouterLink
+          v-for="item in navGestionCliente"
+          :key="item.to"
+          :to="item.to"
+          class="nav-item"
+          :class="{ active: isActive(item.to) }"
+          @click="cerrarMenu"
+        >
+          {{ item.label }}
+        </RouterLink>
+      </template>
+      <template v-else>
+        <RouterLink
+          v-for="item in navGestionProfesional"
+          :key="item.to"
+          :to="item.to"
+          class="nav-item"
+          :class="{ active: isActive(item.to) }"
+          @click="cerrarMenu"
+        >
+          {{ item.label }}
+        </RouterLink>
+      </template>
+
       <span class="section-label">Cuenta</span>
       <template v-for="item in navCuenta" :key="item.to">
         <RouterLink

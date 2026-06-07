@@ -61,6 +61,11 @@ const router = createRouter({
           name: "Servicios",
         },
         {
+          path: "servicios/:id",
+          name: "ServicioDetalle",
+          component: () => import("@/modules/servicios/views/ServicioDetalleView.vue"),
+        },
+        {
           path: "mis-servicios",
           component: () => import("@/modules/servicios/views/MisServiciosView.vue"),
           name: "MisServicios",
@@ -73,7 +78,12 @@ const router = createRouter({
         {
           path: "reservas",
           name: "Reservas",
-          component: { template: '<div style="padding:2rem">Reservas — en construcción</div>' },
+          component: () => import("@/modules/reservas/views/ReservasView.vue"),
+        },
+        {
+          path: "reservas/:id",
+          name: "ReservaDetalle",
+          component: () => import("@/modules/reservas/views/ReservaDetalleView.vue"),
         },
         {
           path: "clientes",
@@ -83,9 +93,7 @@ const router = createRouter({
         {
           path: "disponibilidad",
           name: "Disponibilidad",
-          component: {
-            template: '<div style="padding:2rem">Disponibilidad — en construcción</div>',
-          },
+          redirect: { name: "MisServicios" },
         },
         {
           path: "resenas",
