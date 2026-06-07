@@ -10,8 +10,12 @@ onMounted(() => {
   store.listarConProfesional();
 });
 
-function onFiltrar(filtros: { tipo?: string; busqueda?: string }) {
-  console.log("filtros:", filtros);
+function onFiltrar(filtros: { tipo?: string; busqueda?: string; modalidad?: string }) {
+  store.setFiltros({
+    busqueda: filtros.busqueda ?? "",
+    tipo: filtros.tipo ?? "",
+    modalidad: filtros.modalidad ?? "",
+  });
 }
 </script>
 
@@ -26,7 +30,7 @@ function onFiltrar(filtros: { tipo?: string; busqueda?: string }) {
 
     <div class="cards-grid">
       <ServiceCard
-        v-for="servicio in store.serviciosConProfesional"
+        v-for="servicio in store.serviciosFiltrados"
         :key="servicio.id"
         :servicio="servicio"
       />
@@ -55,7 +59,7 @@ function onFiltrar(filtros: { tipo?: string; busqueda?: string }) {
 
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(240px, 1fr));
+  grid-template-columns: repeat(4, minmax(240px, 1fr));
   gap: 16px;
 }
 

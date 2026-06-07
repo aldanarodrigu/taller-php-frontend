@@ -1,12 +1,19 @@
 <script setup lang="ts">
 import type { ServicioConProfesional } from "@/types";
-defineProps<{
+import { useRouter } from "vue-router";
+
+const props = defineProps<{
   servicio: ServicioConProfesional;
 }>();
+const router = useRouter();
+
+function irAlDetalle() {
+  router.push({ name: "ServicioDetalle", params: { id: props.servicio.id } });
+}
 </script>
 
 <template>
-  <article class="service-card">
+  <article class="service-card" @click="irAlDetalle">
     <div class="img-wrap">
       <img
         :src="

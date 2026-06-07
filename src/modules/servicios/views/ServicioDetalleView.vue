@@ -30,7 +30,9 @@ function horaAMinutos(hora: string): number {
 }
 
 function minutosAHora(min: number): string {
-  const h = Math.floor(min / 60).toString().padStart(2, "0");
+  const h = Math.floor(min / 60)
+    .toString()
+    .padStart(2, "0");
   const m = (min % 60).toString().padStart(2, "0");
   return `${h}:${m}`;
 }
@@ -92,7 +94,9 @@ onMounted(async () => {
     try {
       const res = await serviciosApi.disponibilidad(store.servicio.profesional_id);
       disponibilidadDetalle.value = res.data ?? [];
-    } catch { /* no crítico */ }
+    } catch {
+      /* no crítico */
+    }
   }
 });
 
@@ -148,7 +152,11 @@ async function confirmarReserva() {
   <div class="detalle-wrapper">
     <button class="btn-volver" @click="volver">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-        <path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd"/>
+        <path
+          fill-rule="evenodd"
+          d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z"
+          clip-rule="evenodd"
+        />
       </svg>
       Volver a servicios
     </button>
@@ -160,16 +168,13 @@ async function confirmarReserva() {
     </div>
 
     <div v-else-if="store.servicio" class="layout">
-
       <!-- Columna izquierda: info -->
       <div class="col-info">
         <div class="badges">
           <span class="badge" :class="store.servicio.modalidad">
             {{ store.servicio.modalidad === "presencial" ? "Presencial" : "Virtual" }}
           </span>
-          <span v-if="store.servicio.videollamada" class="badge videollamada">
-            Videollamada
-          </span>
+          <span v-if="store.servicio.videollamada" class="badge videollamada"> Videollamada </span>
         </div>
 
         <h1>{{ store.servicio.nombre }}</h1>
@@ -192,14 +197,23 @@ async function confirmarReserva() {
           </div>
           <div class="info-item">
             <span class="info-label">Modalidad</span>
-            <span class="info-valor">{{ store.servicio.modalidad === "presencial" ? "Presencial" : "Virtual" }}</span>
+            <span class="info-valor">{{
+              store.servicio.modalidad === "presencial" ? "Presencial" : "Virtual"
+            }}</span>
           </div>
         </div>
 
-        <div v-if="store.servicio.modalidad === 'presencial' && store.servicio.direccion" class="direccion">
+        <div
+          v-if="store.servicio.modalidad === 'presencial' && store.servicio.direccion"
+          class="direccion"
+        >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 15.227 17 12.692 17 9A7 7 0 103 9c0 3.692 1.698 6.227 3.354 7.585a12.85 12.85 0 002.274 1.765 11.37 11.37 0 00.757.433 5.741 5.741 0 00.28.14l.019.009.006.002zm1.055-1.828a12.17 12.17 0 01-.745-.527C8.552 15.773 5 13.308 5 9a5 5 0 1110 0c0 4.308-3.552 6.773-5 7.105z" clip-rule="evenodd"/>
-            <path d="M10 11a2 2 0 100-4 2 2 0 000 4z"/>
+            <path
+              fill-rule="evenodd"
+              d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 15.227 17 12.692 17 9A7 7 0 103 9c0 3.692 1.698 6.227 3.354 7.585a12.85 12.85 0 002.274 1.765 11.37 11.37 0 00.757.433 5.741 5.741 0 00.28.14l.019.009.006.002zm1.055-1.828a12.17 12.17 0 01-.745-.527C8.552 15.773 5 13.308 5 9a5 5 0 1110 0c0 4.308-3.552 6.773-5 7.105z"
+              clip-rule="evenodd"
+            />
+            <path d="M10 11a2 2 0 100-4 2 2 0 000 4z" />
           </svg>
           {{ store.servicio.direccion }}
         </div>
@@ -207,7 +221,11 @@ async function confirmarReserva() {
         <div v-if="disponibilidadDetalle.length > 0" class="disponibilidad-detalle">
           <p class="disponibilidad-titulo">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M5.75 2a.75.75 0 01.75.75V4h7V2.75a.75.75 0 011.5 0V4h.25A2.75 2.75 0 0118 6.75v8.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25v-8.5A2.75 2.75 0 014.75 4H5V2.75A.75.75 0 015.75 2zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75z" clip-rule="evenodd"/>
+              <path
+                fill-rule="evenodd"
+                d="M5.75 2a.75.75 0 01.75.75V4h7V2.75a.75.75 0 011.5 0V4h.25A2.75 2.75 0 0118 6.75v8.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25v-8.5A2.75 2.75 0 014.75 4H5V2.75A.75.75 0 015.75 2zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75z"
+                clip-rule="evenodd"
+              />
             </svg>
             Disponibilidad
           </p>
@@ -217,7 +235,11 @@ async function confirmarReserva() {
               <span class="rango">
                 {{ formatHora(d.hora_inicio) }} a {{ formatHora(d.hora_fin) }} hs
                 <template v-if="d.hora_inicio_pausa && d.hora_fin_pausa">
-                  <span class="pausa">(pausa {{ formatHora(d.hora_inicio_pausa) }}–{{ formatHora(d.hora_fin_pausa) }})</span>
+                  <span class="pausa"
+                    >(pausa {{ formatHora(d.hora_inicio_pausa) }}–{{
+                      formatHora(d.hora_fin_pausa)
+                    }})</span
+                  >
                 </template>
               </span>
             </li>
@@ -227,7 +249,11 @@ async function confirmarReserva() {
         <button class="btn-reservar" @click="abrirModal">
           Reservar este servicio
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clip-rule="evenodd"/>
+            <path
+              fill-rule="evenodd"
+              d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z"
+              clip-rule="evenodd"
+            />
           </svg>
         </button>
       </div>
@@ -235,20 +261,33 @@ async function confirmarReserva() {
       <!-- Columna derecha: mapa o visual virtual -->
       <div class="col-mapa">
         <MapaServicio
-          v-if="store.servicio.modalidad === 'presencial' && store.servicio.latitud && store.servicio.longitud"
+          v-if="
+            store.servicio.modalidad === 'presencial' &&
+            store.servicio.latitud &&
+            store.servicio.longitud
+          "
           :latitud="parseFloat(store.servicio.latitud)"
           :longitud="parseFloat(store.servicio.longitud)"
           :direccion="store.servicio.direccion"
         />
         <div v-else class="virtual-placeholder">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z"/>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z"
+            />
           </svg>
           <p>Servicio virtual</p>
           <span>La sesión se realiza por videollamada desde cualquier lugar</span>
         </div>
       </div>
-
     </div>
   </div>
 
@@ -260,7 +299,9 @@ async function confirmarReserva() {
           <h3>Formulario de reserva</h3>
           <button class="modal-close" @click="showModal = false">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/>
+              <path
+                d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"
+              />
             </svg>
           </button>
         </div>
@@ -548,7 +589,9 @@ h1 {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  transition: background 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease;
   margin-top: auto;
 }
 
@@ -672,8 +715,13 @@ h1 {
   display: flex;
 }
 
-.modal-close svg { width: 20px; height: 20px; }
-.modal-close:hover { color: #111827; }
+.modal-close svg {
+  width: 20px;
+  height: 20px;
+}
+.modal-close:hover {
+  color: #111827;
+}
 
 .modal-servicio {
   font-size: 0.875rem;
@@ -743,7 +791,9 @@ h1 {
   transition: border-color 0.2s;
 }
 
-.btn-cancelar-modal:hover { border-color: #9ca3af; }
+.btn-cancelar-modal:hover {
+  border-color: #9ca3af;
+}
 
 .btn-confirmar-modal {
   flex: 2;
@@ -755,7 +805,9 @@ h1 {
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s, box-shadow 0.2s;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
 }
 
 .btn-confirmar-modal:hover:not(:disabled) {
@@ -813,7 +865,10 @@ h1 {
   font-weight: 500;
   color: #374151;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    color 0.15s;
   font-family: "Poppins", sans-serif;
 }
 
