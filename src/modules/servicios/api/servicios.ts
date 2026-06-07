@@ -20,4 +20,8 @@ export const serviciosApi = {
   reseñas(id: number) {
     return http.get(`/services/${id}/reviews`);
   },
+
+  disponibilidad(profesionalId: number) {
+    return http.get(`/disponibilidades/profesional/${profesionalId}`);
+  },
 };

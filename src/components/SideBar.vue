@@ -43,16 +43,6 @@ const cerrarMenu = () => (menuAbierto.value = false);
             Reservas
           </RouterLink>
         </li>
-        <li>
-          <RouterLink
-            to="/app/clientes"
-            class="item"
-            :class="{ active: isActive('/app/clientes') }"
-            @click="cerrarMenu"
-          >
-            Clientes
-          </RouterLink>
-        </li>
       </ul>
     </div>
 
@@ -60,16 +50,22 @@ const cerrarMenu = () => (menuAbierto.value = false);
     <div class="section">
       <p class="section-title">GESTIÓN</p>
       <ul class="menu">
-        <li>
-          <RouterLink to="/app/servicios" class="item" @click="cerrarMenu">Servicios</RouterLink>
+        <!-- Solo clientes -->
+        <li v-if="!esProfesional">
+          <RouterLink to="/app/servicios" class="item" :class="{ active: isActive('/app/servicios') }" @click="cerrarMenu">Servicios</RouterLink>
         </li>
-        <li>
-          <RouterLink to="/app/paquetes" class="item" @click="cerrarMenu">Paquetes</RouterLink>
+        <li v-if="!esProfesional">
+          <RouterLink to="/app/paquetes" class="item" :class="{ active: isActive('/app/paquetes') }" @click="cerrarMenu">Paquetes</RouterLink>
         </li>
-        <li>
-          <RouterLink to="/app/disponibilidad" class="item" @click="cerrarMenu"
-            >Disponibilidad</RouterLink
-          >
+        <!-- Solo profesionales -->
+        <li v-if="esProfesional">
+          <RouterLink to="/app/mis-servicios" class="item" :class="{ active: isActive('/app/mis-servicios') }" @click="cerrarMenu">Mis Servicios</RouterLink>
+        </li>
+        <li v-if="esProfesional">
+          <RouterLink to="/app/clientes" class="item" :class="{ active: isActive('/app/clientes') }" @click="cerrarMenu">Clientes</RouterLink>
+        </li>
+        <li v-if="esProfesional">
+          <RouterLink to="/app/disponibilidad" class="item" :class="{ active: isActive('/app/disponibilidad') }" @click="cerrarMenu">Disponibilidad</RouterLink>
         </li>
       </ul>
     </div>
