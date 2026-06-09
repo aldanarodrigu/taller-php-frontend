@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { RouterLink, useRoute } from "vue-router";
+import { RouterLink, useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/modules/auth/stores/auth";
 import { computed, ref } from "vue";
 
@@ -11,6 +11,13 @@ const isActive = (path: string) => route.path === path;
 const menuAbierto = ref(false);
 const toggleMenu = () => (menuAbierto.value = !menuAbierto.value);
 const cerrarMenu = () => (menuAbierto.value = false);
+
+const router = useRouter();
+
+const irACuenta = () => {
+  cerrarMenu();
+  router.push("/app/cuenta");
+};
 
 const navPrincipal = [
   { to: "/app/home", label: "Inicio" },
@@ -32,7 +39,6 @@ const navGestionProfesional = [
 const navCuenta = [
   { to: "/app/perfil", label: "Perfil", soloProfesional: true },
   { to: "/app/resenas", label: "Reseñas" },
-  { to: "/app/configuracion", label: "Configuración" },
 ];
 </script>
 
@@ -112,14 +118,22 @@ const navCuenta = [
 
     <!-- Footer con usuario -->
     <div class="sidebar-footer">
-      <div class="user-row">
+      <div class="user-row" @click="irACuenta">
         <div class="user-avatar">
           {{ authStore.user?.nombre?.[0] }}{{ authStore.user?.apellido?.[0] }}
         </div>
+
         <div class="user-info">
-          <div class="user-name">{{ authStore.user?.nombre }} {{ authStore.user?.apellido }}</div>
-          <div class="user-role">{{ authStore.user?.role }}</div>
+          <div class="user-name">
+            {{ authStore.user?.nombre }}
+            {{ authStore.user?.apellido }}
+          </div>
+
+          <div class="user-role">
+            {{ authStore.user?.role }}
+          </div>
         </div>
+
         <i
           class="ti ti-dots"
           aria-hidden="true"

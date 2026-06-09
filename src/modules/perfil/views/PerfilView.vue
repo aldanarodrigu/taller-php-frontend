@@ -83,6 +83,7 @@ const handleEditProfile = () => {
 .perfil-view {
   background-color: #f5f4f46c;
   min-height: 100%;
+  padding: 1rem;
 }
 
 .perfil-contenido {

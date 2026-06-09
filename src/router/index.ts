@@ -101,11 +101,9 @@ const router = createRouter({
           component: { template: '<div style="padding:2rem">Reseñas — en construcción</div>' },
         },
         {
-          path: "configuracion",
-          name: "Configuracion",
-          component: {
-            template: '<div style="padding:2rem">Configuración — en construcción</div>',
-          },
+          path: "cuenta",
+          name: "Cuenta",
+          component: () => import("@/modules/perfil/views/CuentaView.vue"),
         },
       ],
     },
