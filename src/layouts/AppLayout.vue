@@ -27,7 +27,7 @@ onMounted(async () => {
 .app-layout {
   display: flex;
   min-height: 100vh;
-  background-color: #e4fee06c;
+  background-color: #f5f4f46c;
 }
 
 .main-content {

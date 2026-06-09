@@ -81,7 +81,7 @@ const handleEditProfile = () => {
 
 <style scoped>
 .perfil-view {
-  background-color: #f5f8ff;
+  background-color: #f5f4f46c;
   min-height: 100%;
 }
 
