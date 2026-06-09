@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { http } from "@/modules/auth/api/http";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+
+const irADetalle = (id: number) => {
+  router.push(`/app/servicios/${id}`);
+};
 
 const props = defineProps<{
   profesionalId?: number | null;
@@ -45,7 +52,12 @@ onMounted(async () => {
     <div v-else-if="servicios.length === 0" class="estado">No hay servicios cargados.</div>
 
     <ul v-else class="lista">
-      <li v-for="servicio in servicios" :key="servicio.id" class="item">
+      <li
+        v-for="servicio in servicios"
+        :key="servicio.id"
+        class="item"
+        @click="irADetalle(servicio.id)"
+      >
         <span class="nombre">{{ servicio.nombre }}</span>
         <span class="precio">${{ servicio.precio }} / sesión</span>
       </li>
@@ -94,10 +106,16 @@ onMounted(async () => {
   padding: 0.75rem 0;
   border-bottom: 0.5px solid #f3f4f6;
   font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 .item:last-child {
   border-bottom: none;
+}
+
+item:hover {
+  background-color: #f9fafb;
 }
 
 .nombre {
