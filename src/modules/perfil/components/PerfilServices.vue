@@ -114,10 +114,6 @@ onMounted(async () => {
   border-bottom: none;
 }
 
-item:hover {
-  background-color: #f9fafb;
-}
-
 .nombre {
   color: #374151;
 }

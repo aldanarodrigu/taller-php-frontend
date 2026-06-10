@@ -46,14 +46,14 @@ const router = createRouter({
           name: "ProfileOwn",
         },
         {
-          path: "perfil/:id",
-          component: PerfilView,
-          name: "ProfileUser",
-        },
-        {
           path: "perfil/editar",
           name: "ProfileEdit",
           component: () => import("@/modules/perfil/components/PerfilEditar.vue"),
+        },
+        {
+          path: "perfil/:id",
+          component: PerfilView,
+          name: "ProfileUser",
         },
         {
           path: "servicios",

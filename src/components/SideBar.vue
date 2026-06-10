@@ -209,20 +209,20 @@ const navCuenta = [
   color: #4b5563;
 }
 .nav-item.active {
-  background: #f0fdf4;
-  color: #15803d;
+  background: #eff9ff;
+  color: #2563eb;
   font-weight: 500;
 }
 .nav-item.active i {
-  color: #15803d;
+  color: #2563eb;
 }
 
 .badge-count {
   margin-left: auto;
   font-size: 10px;
   font-weight: 500;
-  background: #dcfce7;
-  color: #15803d;
+  background: #dcf4fc;
+  color: #2563eb;
   border-radius: 999px;
   padding: 1px 7px;
   min-width: 18px;
@@ -232,7 +232,7 @@ const navCuenta = [
 /* Footer */
 .sidebar-footer {
   padding: 10px;
-  border-top: 0.5px solid #e5e7eb;
+  border-top: 0.5px solid #dcf0fc;
   flex-shrink: 0;
 }
 .user-row {
@@ -251,13 +251,13 @@ const navCuenta = [
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #dcfce7;
+  background: #dcf0fc;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 11px;
   font-weight: 600;
-  color: #15803d;
+  color: #2563eb;
   flex-shrink: 0;
   text-transform: uppercase;
 }

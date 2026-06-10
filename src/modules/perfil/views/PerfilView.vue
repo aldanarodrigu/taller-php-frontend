@@ -23,15 +23,10 @@ const loadProfile = async () => {
       await authStore.fetchUser();
     }
 
-    if (authStore.user?.role === "cliente") {
-      router.push("/app/configuracion");
-      return;
-    }
-
     const id = route.params.id as string | undefined;
 
     if (id) {
-      const res = await http.get(`/api/usuarios/${id}`);
+      const res = await http.get(`/usuarios/${id}`);
       profileUser.value = res.data;
     } else {
       profileUser.value = authStore.user;

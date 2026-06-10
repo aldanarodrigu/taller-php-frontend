@@ -228,7 +228,7 @@ const hayFiltros = computed(
   color: #374151;
 }
 .filter-pill.active {
-  color: #15803d;
+  color: #2563eb;
   font-weight: 500;
 }
 .filter-pill.clear {
@@ -279,7 +279,7 @@ const hayFiltros = computed(
   background: #f9fafb;
 }
 .dropdown-item.active {
-  color: #15803d;
+  color: #2563eb;
   font-weight: 500;
 }
 .dropdown-item i {
@@ -287,7 +287,7 @@ const hayFiltros = computed(
   color: #9ca3af;
 }
 .dropdown-item.active i {
-  color: #15803d;
+  color: #2563eb;
 }
 .check {
   margin-left: auto;
@@ -295,7 +295,7 @@ const hayFiltros = computed(
 }
 
 .search-btn {
-  background: #15803d;
+  background: #2563eb;
   color: #dcfce7;
   border: none;
   border-radius: 999px;
@@ -311,7 +311,7 @@ const hayFiltros = computed(
   transition: background 0.15s;
 }
 .search-btn:hover {
-  background: #166534;
+  background: #2563eb;
 }
 
 /* Categorías */
@@ -343,9 +343,9 @@ const hayFiltros = computed(
   background: #f3f4f6;
 }
 .cat.active {
-  background: #15803d;
+  background: #2563eb;
   color: #dcfce7;
-  border-color: #15803d;
+  border-color: #2563eb;
   font-weight: 500;
 }
 

@@ -130,14 +130,12 @@ function irAlDetalle() {
   border: 0.5px solid transparent;
 }
 .badge.presencial {
-  background: #dbeafe;
-  color: #1d4ed8;
-  border-color: #bfdbfe;
-}
-.badge.online {
   background: #dcfce7;
   color: #15803d;
-  border-color: #bbf7d0;
+}
+.badge.online {
+  background: #dbeafe;
+  color: #1d4ed8;
 }
 .badge:not(.presencial):not(.online) {
   background: rgba(255, 255, 255, 0.92);
