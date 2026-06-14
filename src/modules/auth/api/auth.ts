@@ -22,3 +22,8 @@ export const meRequest = async () => {
   const res = await http.get("/me");
   return res.data; // datos del usuario autenticado
 };
+
+export const logoutRequest = async () => {
+  const res = await http.post("/logout");
+  return res.data;
+};

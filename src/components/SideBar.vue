@@ -2,11 +2,14 @@
 import { RouterLink, useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/modules/auth/stores/auth";
 import { computed, ref } from "vue";
+import { useAuth } from "@/modules/auth/composables/useAuth";
 
 const authStore = useAuthStore();
 const esProfesional = computed(() => authStore.user?.role === "profesional");
 const route = useRoute();
 const isActive = (path: string) => route.path === path;
+
+const { logout: authLogout } = useAuth();
 
 const menuAbierto = ref(false);
 const toggleMenu = () => (menuAbierto.value = !menuAbierto.value);
@@ -17,6 +20,11 @@ const router = useRouter();
 const irACuenta = () => {
   cerrarMenu();
   router.push("/app/cuenta");
+};
+
+const handleLogout = async () => {
+  cerrarMenu();
+  await authLogout();
 };
 
 const navPrincipal = [
@@ -141,6 +149,11 @@ const navCuenta = [
           style="margin-left: auto; color: #9ca3af; font-size: 15px"
         />
       </div>
+
+      <button class="logout-btn" @click="handleLogout">
+        <i class="ti ti-logout" />
+        Cerrar sesión
+      </button>
     </div>
   </aside>
 </template>
@@ -306,6 +319,33 @@ const navCuenta = [
 }
 .hamburger.open span:nth-child(3) {
   transform: translateY(-6.5px) rotate(-45deg);
+}
+
+.logout-btn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #ef4444;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  transition: background 0.12s;
+}
+
+.logout-btn:hover {
+  background: #fef2f2;
+}
+
+.logout-btn i {
+  font-size: 16px;
 }
 
 /* Overlay */

@@ -2,7 +2,7 @@
 
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { loginRequest, registerRequest, meRequest } from "@/modules/auth/api/auth";
+import { loginRequest, registerRequest, meRequest, logoutRequest } from "@/modules/auth/api/auth";
 import type { AxiosError } from "axios";
 
 import { useAuthStore } from "@/modules/auth/stores/auth";
@@ -73,12 +73,14 @@ export function useAuth() {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    console.log("logout ejecutado");
+
     const authStore = useAuthStore();
 
     authStore.logout();
 
-    router.push("/auth/login");
+    window.location.replace("/auth/login");
   };
 
   const me = async () => {
