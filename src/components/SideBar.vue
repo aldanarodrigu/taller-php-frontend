@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { RouterLink, useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/modules/auth/stores/auth";
-import { computed, ref } from "vue";
+import { computed, ref, onMounted } from "vue";
 import { useAuth } from "@/modules/auth/composables/useAuth";
+import { useNotificationStore } from "@/modules/notificaciones/store/notificacionStore";
 
 const authStore = useAuthStore();
 const esProfesional = computed(() => authStore.user?.role === "profesional");
@@ -27,10 +28,16 @@ const handleLogout = async () => {
   await authLogout();
 };
 
+const notificacionStore = useNotificationStore();
+
+onMounted(async () => {
+  await notificacionStore.fetchNotifications();
+});
+
 const navPrincipal = [
   { to: "/app/home", label: "Inicio" },
   { to: "/app/resumen", label: "Resumen" },
-  { to: "/app/reservas", label: "Reservas", badge: 3 },
+  { to: "/app/reservas", label: "Reservas" },
   { to: "/app/clientes", label: "Clientes", soloProfesional: true },
 ];
 
@@ -47,7 +54,7 @@ const navGestionProfesional = [
 const navCuenta = [
   { to: "/app/perfil", label: "Perfil", soloProfesional: true },
   { to: "/app/resenas", label: "Reseñas" },
-  { to: "/app/notificaciones", label: "Notificaciones" },
+  { to: "/app/notificaciones", label: "Notificaciones", badge: true },
 ];
 </script>
 
@@ -121,6 +128,10 @@ const navCuenta = [
           @click="cerrarMenu"
         >
           {{ item.label }}
+
+          <span v-if="item.badge && notificacionStore.unreadCount > 0" class="badge-count">
+            {{ notificacionStore.unreadCount }}
+          </span>
         </RouterLink>
       </template>
     </nav>
