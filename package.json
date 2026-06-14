@@ -18,6 +18,7 @@
     "@supabase/supabase-js": "^2.78.0",
     "axios": "^1.16.1",
     "leaflet": "^1.9.4",
+    "livekit-client": "^2.19.2",
     "pinia": "^3.0.4",
     "vue": "^3.5.32",
     "vue-router": "^5.0.4"

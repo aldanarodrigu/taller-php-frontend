@@ -48,9 +48,14 @@ const puedePagar = computed(() =>
   estado.value === "confirmada" && rol.value === "cliente"
 );
 
+const esOnline = computed(() => servicio.value?.modalidad === "online");
+
+// Solo para servicios presenciales: el profesional inicia la sesión
 const puedeIniciar = computed(() =>
   ["confirmada", "pagada"].includes(estado.value) &&
-  rol.value === "profesional"
+  rol.value === "profesional" &&
+  servicio.value !== null &&
+  !esOnline.value
 );
 
 const puedeFinalizar = computed(() =>
@@ -60,6 +65,15 @@ const puedeFinalizar = computed(() =>
 const puedeNoAsistida = computed(() =>
   estado.value === "en_curso" && rol.value === "profesional"
 );
+
+// Para online: profesional desde confirmada/pagada, cliente desde confirmada/pagada/en_curso
+// Si el servicio aún no cargó pero el estado es en_curso, también se muestra
+const puedeVideollamada = computed(() => {
+  const estadoOk = ["confirmada", "pagada", "en_curso"].includes(estado.value);
+  if (!estadoOk) return false;
+  if (estado.value === "en_curso") return true; // si ya está en curso, mostramos siempre
+  return esOnline.value; // para confirmada/pagada dependemos de que cargue el servicio
+});
 
 const mensajeEstado = computed(() => {
   const esCliente = rol.value === "cliente";
@@ -97,7 +111,9 @@ onMounted(async () => {
     try {
       const res = await serviciosApi.obtener(store.reserva.servicio_id);
       servicio.value = res.data;
-    } catch { /* no crítico */ }
+    } catch (e) {
+      console.warn("No se pudo cargar el servicio:", e);
+    }
   }
 });
 </script>
@@ -201,6 +217,13 @@ onMounted(async () => {
             @click="store.noAsistida(store.reserva.id)"
           >
             {{ store.accionCargando ? 'Procesando...' : 'Marcar no asistida' }}
+          </button>
+          <button
+            v-if="puedeVideollamada"
+            class="btn-accion videollamada"
+            @click="router.push({ name: 'Videollamada', params: { id: store.reserva.id } })"
+          >
+            {{ rol === 'profesional' && estado !== 'en_curso' ? 'Iniciar videollamada' : 'Unirse a videollamada' }}
           </button>
         </div>
       </div>
@@ -411,6 +434,9 @@ h1 {
 
 .btn-accion.no-asistida { background: #ffedd5; color: #9a3412; }
 .btn-accion.no-asistida:hover:not(:disabled) { background: #fed7aa; }
+
+.btn-accion.videollamada { background: #111827; color: white; }
+.btn-accion.videollamada:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
 
 /* ── Columna servicio ── */
 .col-servicio {
