@@ -4,6 +4,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useReservasStore } from "@/modules/reservas/stores/reservas";
 import { useAuthStore } from "@/modules/auth/stores/auth";
 import { serviciosApi } from "@/modules/servicios/api/servicios";
+import { pagosApi } from "@/modules/pagos/api/pagos";
 
 const route = useRoute();
 const router = useRouter();
@@ -74,6 +75,25 @@ const puedeVideollamada = computed(() => {
   if (estado.value === "en_curso") return true; // si ya está en curso, mostramos siempre
   return esOnline.value; // para confirmada/pagada dependemos de que cargue el servicio
 });
+
+const mostrarFormPago = ref(false);
+const pagoCargando = ref(false);
+const pagoError = ref("");
+
+async function confirmarPago() {
+  if (!store.reserva || !servicio.value) return;
+  pagoCargando.value = true;
+  pagoError.value = "";
+  try {
+    await pagosApi.crear(store.reserva.id, servicio.value.precio);
+    mostrarFormPago.value = false;
+    await store.obtener(store.reserva.id); // recargar reserva con estado "pagada"
+  } catch (e: any) {
+    pagoError.value = e?.response?.data?.error ?? "Error al procesar el pago.";
+  } finally {
+    pagoCargando.value = false;
+  }
+}
 
 const mensajeEstado = computed(() => {
   const esCliente = rol.value === "cliente";
@@ -190,9 +210,9 @@ onMounted(async () => {
           <button
             v-if="puedePagar"
             class="btn-accion pagar"
-            disabled
+            @click="mostrarFormPago = true"
           >
-            Pagar — próximamente
+            Pagar reserva
           </button>
           <button
             v-if="puedeIniciar"
@@ -268,6 +288,45 @@ onMounted(async () => {
 
     </div>
   </div>
+
+  <!-- Formulario de pago -->
+  <Teleport to="body">
+    <div v-if="mostrarFormPago" class="pago-overlay" @click.self="mostrarFormPago = false">
+      <div class="pago-form">
+        <h3>Confirmar pago</h3>
+
+        <div class="pago-detalle">
+          <div class="pago-fila">
+            <span>Servicio</span>
+            <span>{{ servicio?.nombre }}</span>
+          </div>
+          <div class="pago-fila">
+            <span>Fecha</span>
+            <span>{{ formatFecha(store.reserva?.fecha ?? '') }}</span>
+          </div>
+          <div class="pago-fila">
+            <span>Horario</span>
+            <span>{{ formatHora(store.reserva?.hora_inicio ?? '') }} – {{ formatHora(store.reserva?.hora_fin ?? '') }}</span>
+          </div>
+          <div class="pago-fila total">
+            <span>Total</span>
+            <span>UYU {{ Number(servicio?.precio).toFixed(2) }}</span>
+          </div>
+        </div>
+
+        <div v-if="pagoError" class="pago-error">{{ pagoError }}</div>
+
+        <div class="pago-botones">
+          <button class="btn-cancelar-pago" :disabled="pagoCargando" @click="mostrarFormPago = false">
+            Cancelar
+          </button>
+          <button class="btn-confirmar-pago" :disabled="pagoCargando" @click="confirmarPago">
+            {{ pagoCargando ? 'Procesando...' : 'Confirmar pago' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <style scoped>
@@ -387,11 +446,10 @@ h1 {
 .mensaje-estado.naranja   { background: #ffedd5; color: #9a3412; }
 
 .btn-accion.pagar {
-  background: #f3f4f6;
-  color: #9ca3af;
-  cursor: not-allowed;
-  border: 1.5px dashed #d1d5db;
+  background: #2563eb;
+  color: white;
 }
+.btn-accion.pagar:hover { box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
 
 .accion-error {
   font-size: 0.875rem;
@@ -521,8 +579,120 @@ h2 {
 .badge.rojo        { background: #fee2e2; color: #b91c1c; }
 .badge.naranja     { background: #ffedd5; color: #9a3412; }
 
+/* ── Formulario de pago ── */
+.pago-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+  backdrop-filter: blur(2px);
+}
+
+.pago-form {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+
+.pago-form h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.pago-detalle {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  background: #f9fafb;
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.pago-fila {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+.pago-fila span:first-child { color: #9ca3af; }
+
+.pago-fila.total {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 0.6rem;
+  margin-top: 0.2rem;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #111827;
+}
+
+.pago-fila.total span:first-child { color: #111827; }
+
+.pago-aviso {
+  font-size: 0.78rem;
+  color: #9ca3af;
+  margin: 0;
+  text-align: center;
+}
+
+.pago-error {
+  font-size: 0.875rem;
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 0.6rem 0.9rem;
+}
+
+.pago-botones {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn-cancelar-pago {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  color: #4b5563;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-cancelar-pago:hover:not(:disabled) { background: #f9fafb; }
+
+.btn-confirmar-pago {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-confirmar-pago:hover:not(:disabled) { background: #1d4ed8; }
+.btn-confirmar-pago:disabled,
+.btn-cancelar-pago:disabled { opacity: 0.6; cursor: not-allowed; }
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .layout { grid-template-columns: 1fr; }
+  .pago-form { margin: 1rem; }
 }
 </style>
