@@ -1,4 +1,4 @@
-import { http } from "@/lib/http";
+import { http } from "@/modules/auth/api/http";
 
 export const videoApi = {
   obtenerToken: (reservaId: number) =>
