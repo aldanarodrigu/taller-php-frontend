@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import Sidebar from "@/components/SideBar.vue";
 import { useAuthStore } from "@/modules/auth/stores/auth";
+import { useNotificationStore } from "@/modules/notificaciones/store/notificacionStore";
 import { onMounted } from "vue";
 
 const authStore = useAuthStore();
+const notificationStore = useNotificationStore();
 
 onMounted(async () => {
   const token = localStorage.getItem("token");
@@ -11,6 +13,9 @@ onMounted(async () => {
   if (token && !authStore.loaded) {
     await authStore.fetchUser();
   }
+
+  await notificationStore.fetchNotifications();
+  notificationStore.iniciarTiempoReal();
 });
 </script>
 

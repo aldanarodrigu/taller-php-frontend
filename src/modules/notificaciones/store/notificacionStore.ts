@@ -1,6 +1,9 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 
+import { echo } from "@/plugins/echo";
+import { useAuthStore } from "@/modules/auth/stores/auth";
+
 import { getNotifications, markAsRead, markAllAsRead } from "../api/notificacionesApi";
 
 import type { Notification } from "@/types/Notification";
@@ -43,11 +46,24 @@ export const useNotificationStore = defineStore("notifications", () => {
     });
   };
 
+  const iniciarTiempoReal = () => {
+    const authStore = useAuthStore();
+
+    if (!authStore.user) return;
+
+    echo.private(`usuario.${authStore.user.id}`).listen("ReservationCreated", (event: any) => {
+      console.log("Evento recibido:", event);
+
+      fetchNotifications();
+    });
+  };
+
   return {
     notifications,
     loading,
     unreadCount,
     fetchNotifications,
+    iniciarTiempoReal,
     markNotificationAsRead,
     markEveryNotificationAsRead,
   };
