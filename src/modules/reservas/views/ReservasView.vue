@@ -8,6 +8,7 @@ const store = useReservasStore();
 const router = useRouter();
 
 const nombresServicios = ref<Record<number, string>>({});
+const nombresProfesionales = ref<Record<number, string>>({});
 
 const ESTADOS_COLOR: Record<string, string> = {
   pendiente:   "amarillo",
@@ -44,6 +45,10 @@ async function cargarNombreServicio(servicioId: number) {
   try {
     const res = await serviciosApi.obtener(servicioId);
     nombresServicios.value[servicioId] = res.data?.nombre ?? `Servicio #${servicioId}`;
+    const prof = res.data?.profesional?.user;
+    if (prof) {
+      nombresProfesionales.value[servicioId] = `${prof.nombre} ${prof.apellido}`;
+    }
   } catch {
     nombresServicios.value[servicioId] = `Servicio #${servicioId}`;
   }
@@ -77,6 +82,9 @@ onMounted(async () => {
           </span>
           <p class="nombre-servicio">
             {{ nombresServicios[r.servicio_id] ?? '...' }}
+          </p>
+          <p v-if="nombresProfesionales[r.servicio_id]" class="nombre-profesional">
+            {{ nombresProfesionales[r.servicio_id] }}
           </p>
           <div class="meta">
             <span>
@@ -151,6 +159,12 @@ h1 {
   font-size: 1rem;
   font-weight: 600;
   color: #111827;
+  margin: 0;
+}
+
+.nombre-profesional {
+  font-size: 0.8rem;
+  color: #6b7280;
   margin: 0;
 }
 
