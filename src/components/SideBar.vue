@@ -39,6 +39,7 @@ const navGestionProfesional = [
 const navCuenta = [
   { to: "/app/perfil", label: "Perfil", soloProfesional: true },
   { to: "/app/resenas", label: "Reseñas" },
+  { to: "/app/notificaciones", label: "Notificaciones" },
 ];
 </script>
 

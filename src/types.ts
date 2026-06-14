@@ -36,3 +36,18 @@ export interface ProfesionalConUser extends Profesional {
 export interface ServicioConProfesional extends Servicio {
   profesional: ProfesionalConUser;
 }
+
+export interface Notification {
+  id: string;
+  type: string;
+  read_at: string | null;
+  created_at: string;
+  updated_at: string;
+
+  data: {
+    tipo: string;
+    titulo: string;
+    mensaje: string;
+    reserva_id?: number;
+  };
+}

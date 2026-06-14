@@ -105,6 +105,11 @@ const router = createRouter({
           name: "Cuenta",
           component: () => import("@/modules/perfil/views/CuentaView.vue"),
         },
+        {
+          path: "notificaciones",
+          name: "Notificaciones",
+          component: () => import("@/modules/notificaciones/views/NotificacionesView.vue"),
+        },
       ],
     },
 
