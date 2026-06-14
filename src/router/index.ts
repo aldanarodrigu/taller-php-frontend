@@ -81,6 +81,11 @@ const router = createRouter({
           component: () => import("@/modules/reservas/views/ReservaDetalleView.vue"),
         },
         {
+          path: "reservas/:id/video",
+          name: "Videollamada",
+          component: () => import("@/modules/reservas/views/VideollamadaView.vue"),
+        },
+        {
           path: "clientes",
           name: "Clientes",
           component: { template: '<div style="padding:2rem">Clientes — en construcción</div>' },

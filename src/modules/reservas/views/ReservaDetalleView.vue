@@ -61,6 +61,11 @@ const puedeNoAsistida = computed(() =>
   estado.value === "en_curso" && rol.value === "profesional"
 );
 
+const puedeVideollamada = computed(() =>
+  ["confirmada", "pagada", "en_curso"].includes(estado.value) &&
+  servicio.value?.modalidad === "online"
+);
+
 const mensajeEstado = computed(() => {
   const esCliente = rol.value === "cliente";
   const msgs: Record<string, string> = {
@@ -201,6 +206,13 @@ onMounted(async () => {
             @click="store.noAsistida(store.reserva.id)"
           >
             {{ store.accionCargando ? 'Procesando...' : 'Marcar no asistida' }}
+          </button>
+          <button
+            v-if="puedeVideollamada"
+            class="btn-accion videollamada"
+            @click="router.push({ name: 'Videollamada', params: { id: store.reserva.id } })"
+          >
+            Unirse a videollamada
           </button>
         </div>
       </div>
@@ -411,6 +423,9 @@ h1 {
 
 .btn-accion.no-asistida { background: #ffedd5; color: #9a3412; }
 .btn-accion.no-asistida:hover:not(:disabled) { background: #fed7aa; }
+
+.btn-accion.videollamada { background: #111827; color: white; }
+.btn-accion.videollamada:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
 
 /* ── Columna servicio ── */
 .col-servicio {
