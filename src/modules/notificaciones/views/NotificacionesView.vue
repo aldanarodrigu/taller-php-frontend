@@ -18,7 +18,6 @@ onMounted(async () => {
           <h3>Notificaciones</h3>
           <p>Novedades sobre tus reservas y actividad</p>
         </div>
-
         <button
           v-if="notificationStore.unreadCount > 0"
           class="btn-save"
@@ -29,7 +28,6 @@ onMounted(async () => {
       </div>
 
       <p v-if="notificationStore.loading" class="empty-text">Cargando...</p>
-
       <p v-else-if="notificationStore.notifications.length === 0" class="empty-text">
         No tenés notificaciones.
       </p>
@@ -52,14 +50,12 @@ onMounted(async () => {
   max-width: 720px;
   margin: 0 auto;
 }
-
 .form-card {
   background: white;
   border: 0.5px solid #e5e7eb;
   border-radius: 8px;
   padding: 1.5rem;
 }
-
 .form-header {
   display: flex;
   justify-content: space-between;
@@ -69,33 +65,28 @@ onMounted(async () => {
   padding-bottom: 1.25rem;
   border-bottom: 0.5px solid #e5e7eb;
 }
-
 .form-header h3 {
   margin: 0;
   font-size: 1rem;
   font-weight: 600;
   color: #111827;
 }
-
 .form-header p {
   margin: 4px 0 0;
   font-size: 0.8rem;
   color: #6b7280;
 }
-
 .empty-text {
   font-size: 0.875rem;
   color: #9ca3af;
   text-align: center;
   padding: 2rem 0;
 }
-
 .notification-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-
 .btn-save {
   padding: 10px 20px;
   font-size: 0.875rem;
@@ -106,6 +97,7 @@ onMounted(async () => {
   color: white;
   cursor: pointer;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 .btn-save:hover {
   opacity: 0.85;
@@ -113,5 +105,22 @@ onMounted(async () => {
 .btn-save:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .page {
+    padding: 16px;
+  }
+  .form-card {
+    padding: 1.25rem;
+  }
+  .form-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .btn-save {
+    width: 100%;
+  }
 }
 </style>

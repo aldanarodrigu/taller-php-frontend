@@ -103,7 +103,8 @@ const guardar = async () => {
 <style scoped>
 .form-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* Por defecto en móviles: una sola columna */
+  grid-template-columns: 1fr;
   gap: 1rem;
 }
 
@@ -113,6 +114,7 @@ const guardar = async () => {
   gap: 6px;
 }
 
+/* En móviles, todos los campos ocupan el ancho completo de forma natural */
 .field.full {
   grid-column: 1 / -1;
 }
@@ -131,6 +133,8 @@ label {
   outline: none;
   transition: border 0.15s;
   background: white;
+  width: 100%; /* Asegura que no se desborde */
+  box-sizing: border-box;
 }
 
 .input:focus {
@@ -163,6 +167,8 @@ label {
   background: #1a1a1a;
   color: white;
   cursor: pointer;
+  /* En móviles muy chicos, el botón ocupa todo el ancho */
+  width: 100%;
 }
 
 .btn-save:hover {
@@ -172,5 +178,15 @@ label {
 .btn-save:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+@media (min-width: 640px) {
+  .form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .btn-save {
+    width: auto;
+  }
 }
 </style>

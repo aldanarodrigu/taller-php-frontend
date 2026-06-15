@@ -38,6 +38,21 @@ onMounted(async () => {
   margin-left: 240px;
   min-height: 100vh;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 2rem;
+  min-width: 0;
+}
+
+/* ── Responsive ──
+   El sidebar pasa a ser un drawer fuera de pantalla
+   (ver Sidebar.vue), así que el contenido principal
+   deja de necesitar el margen de 240px y le damos
+   espacio arriba para el botón hamburguesa. */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    padding: 1rem;
+    padding-top: 4rem;
+  }
 }
 </style>
