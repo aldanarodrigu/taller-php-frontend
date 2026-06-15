@@ -49,13 +49,28 @@ export const useNotificationStore = defineStore("notifications", () => {
   const iniciarTiempoReal = () => {
     const authStore = useAuthStore();
 
-    if (!authStore.user) return;
+    console.log("INICIANDO REALTIME");
 
-    echo.private(`usuario.${authStore.user.id}`).listen("ReservationCreated", (event: any) => {
-      console.log("Evento recibido:", event);
+    if (!authStore.user) {
+      console.log("NO HAY USUARIO");
+      return;
+    }
 
-      fetchNotifications();
-    });
+    console.log("USUARIO:", authStore.user.id);
+
+    echo
+      .private(`usuario.${authStore.user.id}`)
+      .subscribed(() => {
+        console.log("SUSCRIPTO OK");
+      })
+      .error((error) => {
+        console.error("ERROR CANAL", error);
+      })
+      .listen("ReservationCreated", (event) => {
+        console.log("EVENTO RECIBIDO", event);
+
+        fetchNotifications();
+      });
   };
 
   return {
