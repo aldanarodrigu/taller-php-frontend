@@ -48,6 +48,7 @@ const navGestionCliente = [
 
 const navGestionProfesional = [
   { to: "/app/mis-servicios", label: "Mis Servicios" },
+  { to: "/app/mis-paquetes", label: "Mis Paquetes" },
   { to: "/app/disponibilidad", label: "Disponibilidad" },
 ];
 

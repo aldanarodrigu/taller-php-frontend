@@ -20,15 +20,19 @@ export const usePaquetesStore = defineStore("paquetes", () => {
     }
   }
 
-  // cuando el usuario hace clic en "Comprar"
-  async function comprar(id: number) {
-    try {
-      await paquetesApi.comprar(id);
-      alert("¡Paquete comprado correctamente!");
-    } catch {
-      alert("Error al comprar el paquete");
-    }
+  async function crear(datos: object) {
+    await paquetesApi.crear(datos);
+    await listar();
   }
 
-  return { paquetes, cargando, error, listar, comprar };
+  async function eliminar(id: number) {
+    await paquetesApi.eliminar(id);
+    await listar();
+  }
+
+  async function comprar(id: number) {
+    await paquetesApi.comprar(id);
+  }
+
+  return { paquetes, cargando, error, listar, crear, eliminar, comprar };
 });

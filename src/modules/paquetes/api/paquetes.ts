@@ -9,6 +9,18 @@ export const paquetesApi = {
     return http.get(`/packages/${id}`);
   },
 
+  crear(datos: object) {
+    return http.post("/packages", datos);
+  },
+
+  eliminar(id: number) {
+    return http.delete(`/packages/${id}`);
+  },
+
+  misPaquetes() {
+    return http.get("/packages/mis-paquetes");
+  },
+
   comprar(id: number) {
     return http.post(`/packages/${id}/comprar`);
   },
