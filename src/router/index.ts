@@ -27,6 +27,12 @@ const router = createRouter({
           path: "callback",
           component: () => import("@/modules/auth/views/GoogleCallback.vue"),
         },
+        {
+          path: "/auth/google/select-rol",
+          name: "GoogleSelectRol",
+          component: () => import("@/modules/auth/views/SelectRolGoogle.vue"),
+          meta: { requiresGuest: true },
+        },
       ],
     },
 

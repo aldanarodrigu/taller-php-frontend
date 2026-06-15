@@ -55,24 +55,17 @@ export const useNotificationStore = defineStore("notifications", () => {
 
   const iniciarTiempoReal = () => {
     const authStore = useAuthStore();
-
     const profesionalId = authStore.user?.profesional?.id;
 
-    console.log("PROFESIONAL ID REAL:", profesionalId);
+    if (!profesionalId) {
+      console.warn("iniciarTiempoReal: sin profesionalId, abortando");
+      return;
+    }
 
-    if (!profesionalId) return;
-
-    echo
-      .private(`profesional.${profesionalId}`)
-      .subscribed(() => {
-        console.log("SUSCRIPTO OK PROFESIONAL");
-      })
-      .listen("ReservationCreated", (event) => {
-        console.log("EVENTO:", event);
-        fetchNotifications();
-      });
+    echo.private(`profesional.${profesionalId}`).listen("ReservationCreated", async () => {
+      await fetchNotifications(); // awaitar para asegurar que el store se actualiza antes de que Vue re-renderice
+    });
   };
-
   return {
     notifications,
     loading,

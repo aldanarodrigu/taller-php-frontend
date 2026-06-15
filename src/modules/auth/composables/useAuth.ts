@@ -2,7 +2,13 @@
 
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { loginRequest, registerRequest, meRequest, logoutRequest } from "@/modules/auth/api/auth";
+import {
+  loginRequest,
+  registerRequest,
+  completeGoogleRequest,
+  meRequest,
+  logoutRequest,
+} from "@/modules/auth/api/auth";
 import type { AxiosError } from "axios";
 
 import { useAuthStore } from "@/modules/auth/stores/auth";
@@ -73,6 +79,25 @@ export function useAuth() {
     }
   };
 
+  const completeGoogleRegister = async (payload: string, role: string) => {
+    loading.value = true;
+    error.value = null;
+    try {
+      const res = await completeGoogleRequest({ payload, role });
+      const authStore = useAuthStore();
+      localStorage.setItem("token", res.token);
+      authStore.user = null;
+      authStore.loaded = false;
+      await authStore.fetchUser();
+      await router.push("/app/home");
+    } catch (e) {
+      const err = e as AxiosError<{ message: string }>;
+      error.value = err.response?.data?.message ?? "Error al completar el registro";
+    } finally {
+      loading.value = false;
+    }
+  };
+
   const logout = async () => {
     console.log("logout ejecutado");
 
@@ -87,5 +112,5 @@ export function useAuth() {
     return await meRequest();
   };
 
-  return { login, logout, me, register, loading, error };
+  return { login, logout, me, register, completeGoogleRegister, loading, error };
 }
