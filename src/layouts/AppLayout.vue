@@ -9,13 +9,11 @@ const notificationStore = useNotificationStore();
 
 onMounted(async () => {
   const token = localStorage.getItem("token");
-
   if (token && !authStore.loaded) {
-    await authStore.fetchUser();
+    await authStore.fetchUser(); // user debe estar cargado antes de iniciarTiempoReal
   }
-
   await notificationStore.fetchNotifications();
-  notificationStore.iniciarTiempoReal();
+  notificationStore.iniciarTiempoReal(); // ahora sí authStore.user?.profesional?.id existe
 });
 </script>
 

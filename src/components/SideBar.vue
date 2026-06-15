@@ -29,10 +29,7 @@ const handleLogout = async () => {
 };
 
 const notificacionStore = useNotificationStore();
-
-onMounted(async () => {
-  await notificacionStore.fetchNotifications();
-});
+const unreadCount = computed(() => notificacionStore.unreadCount);
 
 const navPrincipal = [
   { to: "/app/home", label: "Inicio" },
@@ -129,8 +126,8 @@ const navCuenta = [
         >
           {{ item.label }}
 
-          <span v-if="item.badge && notificacionStore.unreadCount > 0" class="badge-count">
-            {{ notificacionStore.unreadCount }}
+          <span v-if="item.badge && unreadCount > 0" class="badge-count">
+            {{ unreadCount }}
           </span>
         </RouterLink>
       </template>

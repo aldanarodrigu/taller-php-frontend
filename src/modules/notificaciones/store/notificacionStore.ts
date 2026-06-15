@@ -14,20 +14,27 @@ export const useNotificationStore = defineStore("notifications", () => {
 
   const unreadCount = computed(() => notifications.value.filter((n) => !n.read_at).length);
 
+  // =========================
+  // LOAD INICIAL
+  // =========================
   const fetchNotifications = async () => {
     loading.value = true;
 
     try {
       const response = await getNotifications();
 
-      console.log(response);
-
-      notifications.value = response.data;
+      notifications.value = response.data.map((n: Notification) => ({
+        ...n,
+        read_at: n.read_at ?? null,
+      }));
     } finally {
       loading.value = false;
     }
   };
 
+  // =========================
+  // MARK AS READ
+  // =========================
   const markNotificationAsRead = async (id: string) => {
     await markAsRead(id);
 
@@ -49,26 +56,19 @@ export const useNotificationStore = defineStore("notifications", () => {
   const iniciarTiempoReal = () => {
     const authStore = useAuthStore();
 
-    console.log("INICIANDO REALTIME");
+    const profesionalId = authStore.user?.profesional?.id;
 
-    if (!authStore.user) {
-      console.log("NO HAY USUARIO");
-      return;
-    }
+    console.log("PROFESIONAL ID REAL:", profesionalId);
 
-    console.log("USUARIO:", authStore.user.id);
+    if (!profesionalId) return;
 
     echo
-      .private(`usuario.${authStore.user.id}`)
+      .private(`profesional.${profesionalId}`)
       .subscribed(() => {
-        console.log("SUSCRIPTO OK");
-      })
-      .error((error) => {
-        console.error("ERROR CANAL", error);
+        console.log("SUSCRIPTO OK PROFESIONAL");
       })
       .listen("ReservationCreated", (event) => {
-        console.log("EVENTO RECIBIDO", event);
-
+        console.log("EVENTO:", event);
         fetchNotifications();
       });
   };
