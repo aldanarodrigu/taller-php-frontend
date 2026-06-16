@@ -3,6 +3,7 @@ y el interceptor que agrega el token Bearer en cada request automáticamente.
 También redirige al login si recibe un 401.*/
 
 import axios from "axios";
+import router from "@/router";
 
 export const http = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:8000",
@@ -29,7 +30,7 @@ http.interceptors.response.use(
       localStorage.removeItem("token");
       localStorage.removeItem("user");
 
-      window.location.href = "/auth/login";
+      router.push("/auth/login");
     }
     return Promise.reject(error);
   },

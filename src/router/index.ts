@@ -6,10 +6,36 @@ import PerfilView from "@/modules/perfil/views/PerfilView.vue";
 
 import AppLayout from "@/layouts/AppLayout.vue";
 import AuthLayout from "@/layouts/AuthLayout.vue";
+import AdminLayout from "@/layouts/AdminLayout.vue";
+
+import { useAuthStore } from "@/modules/auth/stores/auth";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    //ADMIN
+    {
+      path: "/admin",
+      component: AdminLayout,
+      meta: { requiresAuth: true, role: "admin" },
+      children: [
+        {
+          path: "dashboard",
+          name: "AdminDashboard",
+          component: () => import("@/modules/admin/views/AdminDashboard.vue"),
+        },
+        {
+          path: "usuarios",
+          name: "AdminUsers",
+          component: () => import("@/modules/admin/views/AdminUsers.vue"),
+        },
+        {
+          path: "actividad",
+          name: "AdminActivity",
+          component: () => import("@/modules/admin/views/AdminActivity.vue"),
+        },
+      ],
+    },
     // AUTH
     {
       path: "/auth",
@@ -131,12 +157,24 @@ const router = createRouter({
   ],
 });
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   const token = localStorage.getItem("token");
   const isPublic = to.path.startsWith("/auth");
 
+  const authStore = useAuthStore();
+
+  if (token && !authStore.user) {
+    await authStore.fetchUser();
+  }
+
+  const user = authStore.user;
+
   if (!isPublic && !token) {
     return "/auth/login";
+  }
+
+  if (to.path.startsWith("/admin") && user?.role !== "admin") {
+    return "/app/home";
   }
 });
 

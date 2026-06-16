@@ -35,7 +35,11 @@ export function useAuth() {
       // cargar usuario nuevo
       await authStore.fetchUser();
 
-      await router.push("/app/home");
+      if (authStore.user?.role === "admin") {
+        await router.push("/admin/dashboard");
+      } else {
+        await router.push("/app/home");
+      }
     } catch (e) {
       const err = e as AxiosError<{ message: string }>;
       error.value = err.response?.data?.message ?? "Error al iniciar sesión";
