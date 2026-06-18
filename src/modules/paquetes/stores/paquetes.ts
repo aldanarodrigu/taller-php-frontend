@@ -20,15 +20,34 @@ export const usePaquetesStore = defineStore("paquetes", () => {
     }
   }
 
-  // cuando el usuario hace clic en "Comprar"
-  async function comprar(id: number) {
+  const misPaquetes = ref<any[]>([]);
+
+  async function listarMios() {
+    cargando.value = true;
+    error.value = "";
     try {
-      await paquetesApi.comprar(id);
-      alert("¡Paquete comprado correctamente!");
+      const res = await paquetesApi.listar();
+      misPaquetes.value = Array.isArray(res.data) ? res.data : res.data.data ?? [];
     } catch {
-      alert("Error al comprar el paquete");
+      error.value = "Error al cargar los paquetes";
+    } finally {
+      cargando.value = false;
     }
   }
 
-  return { paquetes, cargando, error, listar, comprar };
+  async function crear(datos: object) {
+    await paquetesApi.crear(datos);
+    await listarMios();
+  }
+
+  async function eliminar(id: number) {
+    await paquetesApi.eliminar(id);
+    misPaquetes.value = misPaquetes.value.filter((p) => p.id !== id);
+  }
+
+  async function comprar(id: number) {
+    await paquetesApi.comprar(id);
+  }
+
+  return { paquetes, misPaquetes, cargando, error, listar, listarMios, crear, eliminar, comprar };
 });

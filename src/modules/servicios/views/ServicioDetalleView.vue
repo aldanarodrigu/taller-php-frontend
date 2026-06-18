@@ -143,7 +143,7 @@ async function confirmarReserva() {
       hora_inicio: horarioSeleccionado.value,
     });
     showModal.value = false;
-    router.push({ name: "Reservas" });
+    router.push({ name: "Compras" });
   } catch (e: any) {
     errorReserva.value = e?.response?.data?.error ?? "Error al crear la reserva.";
   } finally {

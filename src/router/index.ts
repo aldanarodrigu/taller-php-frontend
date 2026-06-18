@@ -108,9 +108,19 @@ const router = createRouter({
           name: "Paquetes",
         },
         {
+          path: "mis-paquetes",
+          component: () => import("@/modules/paquetes/views/MisPaquetesView.vue"),
+          name: "MisPaquetes",
+        },
+        {
           path: "reservas",
           name: "Reservas",
           component: () => import("@/modules/reservas/views/ReservasView.vue"),
+        },
+        {
+          path: "compras",
+          name: "Compras",
+          component: () => import("@/modules/reservas/views/ComprasView.vue"),
         },
         {
           path: "reservas/:id",

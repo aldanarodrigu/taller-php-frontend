@@ -62,10 +62,11 @@ const puedeNoAsistida = computed(() => estado.value === "en_curso" && rol.value 
 // Para online: profesional desde confirmada/pagada, cliente desde confirmada/pagada/en_curso
 // Si el servicio aún no cargó pero el estado es en_curso, también se muestra
 const puedeVideollamada = computed(() => {
-  const estadoOk = ["confirmada", "pagada", "en_curso"].includes(estado.value);
+  if (!store.reserva?.pago_id) return false;
+  const estadoOk = ["pagada", "en_curso"].includes(estado.value);
   if (!estadoOk) return false;
-  if (estado.value === "en_curso") return true; // si ya está en curso, mostramos siempre
-  return esOnline.value; // para confirmada/pagada dependemos de que cargue el servicio
+  if (estado.value === "en_curso") return true;
+  return esOnline.value;
 });
 
 const mostrarFormPago = ref(false);

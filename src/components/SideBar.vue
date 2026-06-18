@@ -36,7 +36,8 @@ const unreadCount = computed(() => notificacionStore.unreadCount);
 const navPrincipal = [
   { to: "/app/home", label: "Inicio" },
   { to: "/app/resumen", label: "Resumen" },
-  { to: "/app/reservas", label: "Reservas" },
+  { to: "/app/reservas", label: "Reservas", soloProfesional: true },
+  { to: "/app/compras", label: "Mis Compras", soloCliente: true },
   { to: "/app/clientes", label: "Clientes", soloProfesional: true },
 ];
 
@@ -47,6 +48,7 @@ const navGestionCliente = [
 
 const navGestionProfesional = [
   { to: "/app/mis-servicios", label: "Mis Servicios" },
+  { to: "/app/mis-paquetes", label: "Mis Paquetes" },
   { to: "/app/disponibilidad", label: "Disponibilidad" },
 ];
 
@@ -80,7 +82,7 @@ const navCuenta = [
       <span class="section-label">Principal</span>
       <template v-for="item in navPrincipal" :key="item.to">
         <RouterLink
-          v-if="!item.soloProfesional || esProfesional"
+          v-if="(!item.soloProfesional || esProfesional) && (!item.soloCliente || !esProfesional)"
           :to="item.to"
           class="nav-item"
           :class="{ active: isActive(item.to) }"
