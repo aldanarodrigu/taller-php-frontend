@@ -50,7 +50,7 @@ const esOnline = computed(() => servicio.value?.modalidad === "online");
 // Solo para servicios presenciales: el profesional inicia la sesión
 const puedeIniciar = computed(
   () =>
-    ["confirmada", "pagada"].includes(estado.value) &&
+    estado.value === "pagada" &&
     rol.value === "profesional" &&
     servicio.value !== null &&
     !esOnline.value,
@@ -66,7 +66,7 @@ const puedeVideollamada = computed(() => {
   if (!store.reserva?.pago_id) return false;
   const estadoOk = ["pagada", "en_curso"].includes(estado.value);
   if (!estadoOk) return false;
-  if (estado.value === "en_curso") return true;
+  if (estado.value === "en_curso") return esOnline.value;
   return esOnline.value;
 });
 
