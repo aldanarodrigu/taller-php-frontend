@@ -77,6 +77,10 @@ const navCuenta = [
 
   <!-- Sidebar -->
   <aside class="sidebar" :class="{ open: menuAbierto }">
+    <div class="sidebar-header">
+      <span class="sidebar-brand">Encuentra tu profesional</span>
+    </div>
+
     <!-- Nav -->
     <nav class="nav">
       <span class="section-label">Principal</span>
@@ -161,6 +165,8 @@ const navCuenta = [
           style="margin-left: auto; color: #9ca3af; font-size: 15px"
         />
       </div>
+
+      <div class="footer-divider" />
 
       <button class="logout-btn" @click="handleLogout">
         <i class="ti ti-logout" />
