@@ -5,6 +5,7 @@ import { useServiciosStore } from "@/modules/servicios/stores/servicios";
 import MapaServicio from "@/modules/servicios/components/MapaServicio.vue";
 import { reservasApi } from "@/modules/reservas/api/reservas";
 import { serviciosApi } from "@/modules/servicios/api/servicios";
+import { calificacionesApi } from "@/modules/calificaciones/api/calificaciones";
 
 import { useAuthStore } from "@/modules/auth/stores/auth";
 
@@ -15,6 +16,15 @@ const store = useServiciosStore();
 const authStore = useAuthStore();
 
 const disponibilidadDetalle = ref<any[]>([]);
+
+const resenas = ref<any[]>([]);
+const promedioResenas = ref<number | null>(null);
+
+function calcularPromedio(lista: any[]) {
+  if (!lista.length) return null;
+  const suma = lista.reduce((acc, r) => acc + r.puntuacion, 0);
+  return Math.round((suma / lista.length) * 10) / 10;
+}
 
 const showModal = ref(false);
 const fecha = ref("");
@@ -93,7 +103,8 @@ function capitalize(str: string) {
 }
 
 onMounted(async () => {
-  await store.obtener(Number(route.params.id));
+  const id = Number(route.params.id);
+  await store.obtener(id);
   if (store.servicio?.profesional_id) {
     try {
       const res = await serviciosApi.disponibilidad(store.servicio.profesional_id);
@@ -101,6 +112,13 @@ onMounted(async () => {
     } catch {
       /* no crítico */
     }
+  }
+  try {
+    const res = await calificacionesApi.porServicio(id);
+    resenas.value = Array.isArray(res.data) ? res.data : res.data.data ?? [];
+    promedioResenas.value = calcularPromedio(resenas.value);
+  } catch {
+    /* no crítico */
   }
 });
 
@@ -290,6 +308,35 @@ async function confirmarReserva() {
           <span>La sesión se realiza por videollamada desde cualquier lugar</span>
         </div>
       </div>
+      <!-- Calificaciones -->
+      <div class="form-card">
+        <div class="form-header">
+          <div>
+            <h3>
+              Calificaciones
+              <span v-if="promedioResenas !== null" class="promedio">
+                {{ promedioResenas }} / 5
+              </span>
+            </h3>
+            <p>{{ resenas.length }} {{ resenas.length === 1 ? "calificación" : "calificaciones" }}</p>
+          </div>
+        </div>
+
+        <p v-if="resenas.length === 0" class="empty-text">Todavía no hay calificaciones para este servicio.</p>
+
+        <div v-else class="resenas-lista">
+          <div v-for="r in resenas" :key="r.id" class="resena-item">
+            <div class="resena-header">
+              <span class="resena-autor">
+                {{ r.cliente?.user?.nombre ?? "Cliente" }}
+              </span>
+              <span class="resena-puntuacion">{{ r.puntuacion }} / 5</span>
+            </div>
+            <p v-if="r.comentario" class="resena-comentario">{{ r.comentario }}</p>
+          </div>
+        </div>
+      </div>
+
     </template>
   </div>
 
@@ -864,6 +911,53 @@ async function confirmarReserva() {
   background: #eff9ff;
   color: #1d4ed8;
   font-weight: 600;
+}
+
+/* ── Reseñas ── */
+.promedio {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #2563eb;
+  margin-left: 0.5rem;
+}
+
+.resenas-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.resena-item {
+  padding: 0.75rem 1rem;
+  border: 0.5px solid #e5e7eb;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.resena-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.resena-autor {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.resena-puntuacion {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.resena-comentario {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0;
 }
 
 /* ── Responsive ── */

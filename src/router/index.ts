@@ -143,9 +143,9 @@ const router = createRouter({
           redirect: { name: "MisServicios" },
         },
         {
-          path: "resenas",
-          name: "Resenas",
-          component: { template: '<div style="padding:2rem">Reseñas — en construcción</div>' },
+          path: "calificaciones",
+          name: "Calificaciones",
+          component: () => import("@/modules/calificaciones/views/CalificacionesView.vue"),
         },
         {
           path: "cuenta",

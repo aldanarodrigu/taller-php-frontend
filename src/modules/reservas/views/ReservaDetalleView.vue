@@ -5,6 +5,7 @@ import { useReservasStore } from "@/modules/reservas/stores/reservas";
 import { useAuthStore } from "@/modules/auth/stores/auth";
 import { serviciosApi } from "@/modules/servicios/api/servicios";
 import { pagosApi } from "@/modules/pagos/api/pagos";
+import { calificacionesApi } from "@/modules/calificaciones/api/calificaciones";
 
 const route = useRoute();
 const router = useRouter();
@@ -72,6 +73,40 @@ const puedeVideollamada = computed(() => {
 const mostrarFormPago = ref(false);
 const pagoCargando = ref(false);
 const pagoError = ref("");
+
+const puntuacion = ref(0);
+const comentario = ref("");
+const resenaEnviando = ref(false);
+const resenaError = ref("");
+const resenaEnviada = ref(false);
+
+const puedeCalificar = computed(() =>
+  rol.value === "cliente" &&
+  estado.value === "finalizada" &&
+  !store.reserva?.calificacion &&
+  !resenaEnviada.value
+);
+
+async function enviarResena() {
+  if (!puntuacion.value) {
+    resenaError.value = "Elegí una puntuación.";
+    return;
+  }
+  resenaEnviando.value = true;
+  resenaError.value = "";
+  try {
+    await calificacionesApi.crear({
+      reserva_id: store.reserva!.id,
+      puntuacion: puntuacion.value,
+      comentario: comentario.value || undefined,
+    });
+    resenaEnviada.value = true;
+  } catch (e: any) {
+    resenaError.value = e?.response?.data?.error ?? "Error al enviar la reseña.";
+  } finally {
+    resenaEnviando.value = false;
+  }
+}
 
 async function confirmarPago() {
   if (!store.reserva || !servicio.value) return;
@@ -297,6 +332,46 @@ onMounted(async () => {
 
         <p v-else class="empty-text">Cargando información del servicio...</p>
       </div>
+
+      <!-- Calificación -->
+      <div v-if="puedeCalificar" class="form-card resena-card">
+        <div class="form-header">
+          <div>
+            <h3>Calificá tu experiencia</h3>
+            <p>Contanos cómo fue tu experiencia</p>
+          </div>
+        </div>
+
+        <div class="puntuacion-opciones">
+          <button
+            v-for="n in 5"
+            :key="n"
+            class="puntuacion-btn"
+            :class="{ activo: puntuacion >= n }"
+            @click="puntuacion = n"
+          >
+            {{ n }}
+          </button>
+        </div>
+
+        <textarea
+          v-model="comentario"
+          class="resena-textarea"
+          rows="3"
+          placeholder="Comentario (opcional)"
+        />
+
+        <div v-if="resenaError" class="error-msg">{{ resenaError }}</div>
+
+        <button class="btn-save" :disabled="resenaEnviando" @click="enviarResena">
+          {{ resenaEnviando ? "Enviando..." : "Enviar calificación" }}
+        </button>
+      </div>
+
+      <div v-else-if="resenaEnviada || store.reserva?.calificacion" class="form-card resena-card">
+        <p class="resena-confirmacion">Tu calificación fue enviada. Gracias por tu opinión.</p>
+      </div>
+
     </div>
   </div>
 
@@ -699,6 +774,56 @@ onMounted(async () => {
 .pago-botones button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* ── Reseña ── */
+.resena-card { gap: 1rem; }
+
+.puntuacion-opciones {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.puntuacion-btn {
+  width: 40px;
+  height: 40px;
+  border: 0.5px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+}
+
+.puntuacion-btn.activo {
+  background: #1a1a1a;
+  border-color: #1a1a1a;
+  color: white;
+}
+
+.resena-textarea {
+  width: 100%;
+  border: 0.5px solid #d1d5db;
+  border-radius: 8px;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.875rem;
+  resize: vertical;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.resena-textarea:focus {
+  outline: none;
+  border-color: #1a1a1a;
+}
+
+.resena-confirmacion {
+  font-size: 0.875rem;
+  color: #16a34a;
+  margin: 0;
+  text-align: center;
+  padding: 0.5rem 0;
 }
 
 /* ── Botones genéricos (unificados) ── */

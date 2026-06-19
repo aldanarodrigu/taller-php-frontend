@@ -51,7 +51,7 @@ defineEmits<{
     <div class="stats">
       <div class="stat">
         <span class="stat-value">—</span>
-        <span class="stat-label">Reseñas</span>
+        <span class="stat-label">Calificaciones</span>
       </div>
       <div class="stat">
         <span class="stat-value">{{ user.profesional?.puntuacion_promedio ?? "—" }}</span>
