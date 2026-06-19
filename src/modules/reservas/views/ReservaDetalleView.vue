@@ -45,7 +45,7 @@ const puedeCancelar = computed(
 
 const puedePagar = computed(() => estado.value === "confirmada" && rol.value === "cliente");
 
-const esOnline = computed(() => servicio.value?.modalidad === "online");
+const esOnline = computed(() => servicio.value?.modalidad === "virtual");
 
 // Solo para servicios presenciales: el profesional inicia la sesión
 const puedeIniciar = computed(
@@ -304,7 +304,7 @@ onMounted(async () => {
             <div class="info-item">
               <span class="info-label">Modalidad</span>
               <span class="info-valor">{{
-                servicio.modalidad === "presencial" ? "Presencial" : "Virtual"
+                servicio.modalidad === "presencial" ? "Presencial" : servicio.modalidad === "hibrida" ? "Híbrida" : "Virtual"
               }}</span>
             </div>
             <div class="info-item">

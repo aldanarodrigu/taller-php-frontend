@@ -32,9 +32,10 @@ function irAlDetalle() {
         :class="{
           presencial: servicio.modalidad === 'presencial',
           online: servicio.modalidad === 'virtual',
+          hibrida: servicio.modalidad === 'hibrida',
         }"
       >
-        {{ servicio.modalidad }}
+        {{ servicio.modalidad === 'hibrida' ? 'Híbrida' : servicio.modalidad }}
       </span>
     </div>
 
@@ -132,6 +133,10 @@ function irAlDetalle() {
 .badge.online {
   background: #dbeafe;
   color: #1d4ed8;
+}
+.badge.hibrida {
+  background: #fef3c7;
+  color: #b45309;
 }
 .badge:not(.presencial):not(.online) {
   background: rgba(255, 255, 255, 0.92);

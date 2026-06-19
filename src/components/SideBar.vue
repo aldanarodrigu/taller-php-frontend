@@ -34,8 +34,7 @@ const notificacionStore = useNotificationStore();
 const unreadCount = computed(() => notificacionStore.unreadCount);
 
 const navPrincipal = [
-  { to: "/app/home", label: "Inicio" },
-  { to: "/app/resumen", label: "Resumen" },
+  { to: "/app/home", label: "Inicio", soloCliente: true },
   { to: "/app/reservas", label: "Reservas", soloProfesional: true },
   { to: "/app/compras", label: "Mis Compras", soloCliente: true },
   { to: "/app/clientes", label: "Clientes", soloProfesional: true },

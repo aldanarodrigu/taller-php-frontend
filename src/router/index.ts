@@ -186,6 +186,10 @@ router.beforeEach(async (to) => {
   if (to.path.startsWith("/admin") && user?.role !== "admin") {
     return "/app/home";
   }
+
+  if (to.path === "/app/home" && user?.role === "profesional") {
+    return "/app/reservas";
+  }
 });
 
 export default router;

@@ -194,9 +194,9 @@ async function confirmarReserva() {
             <div class="badges">
               <span
                 class="badge"
-                :class="store.servicio.modalidad === 'presencial' ? 'verde-claro' : 'azul'"
+                :class="store.servicio.modalidad === 'presencial' ? 'verde-claro' : store.servicio.modalidad === 'hibrida' ? 'naranja' : 'azul'"
               >
-                {{ store.servicio.modalidad === "presencial" ? "Presencial" : "Virtual" }}
+                {{ store.servicio.modalidad === "presencial" ? "Presencial" : store.servicio.modalidad === "hibrida" ? "Híbrida" : "Virtual" }}
               </span>
               <span v-if="store.servicio.videollamada" class="badge amarillo"> Videollamada </span>
             </div>
@@ -221,7 +221,7 @@ async function confirmarReserva() {
           <div class="info-item">
             <span class="info-label">Modalidad</span>
             <span class="info-valor">{{
-              store.servicio.modalidad === "presencial" ? "Presencial" : "Virtual"
+              store.servicio.modalidad === "presencial" ? "Presencial" : store.servicio.modalidad === "hibrida" ? "Híbrida" : "Virtual"
             }}</span>
           </div>
         </div>
@@ -290,6 +290,10 @@ async function confirmarReserva() {
           :longitud="parseFloat(store.servicio.longitud)"
           :direccion="store.servicio.direccion"
         />
+        <div v-else-if="store.servicio.modalidad === 'hibrida'" class="virtual-placeholder">
+          <p>Modalidad híbrida</p>
+          <span>La modalidad de cada sesión se coordina directamente con el profesional</span>
+        </div>
         <div v-else class="virtual-placeholder">
           <svg
             xmlns="http://www.w3.org/2000/svg"
