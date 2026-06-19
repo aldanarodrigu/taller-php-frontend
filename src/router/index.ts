@@ -34,6 +34,11 @@ const router = createRouter({
           name: "AdminActivity",
           component: () => import("@/modules/admin/views/AdminActivity.vue"),
         },
+        {
+          path: "usuarios/:id",
+          name: "AdminUserDetail",
+          component: () => import("@/modules/admin/views/UserDetailView.vue"),
+        },
       ],
     },
     // AUTH

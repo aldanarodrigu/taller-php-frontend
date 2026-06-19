@@ -9,6 +9,7 @@ type User = {
   apellido: string;
   email: string;
   role: string;
+  created_at: string;
 };
 
 const authStore = useAuthStore();
@@ -43,6 +44,16 @@ const filteredUsers = computed(() => {
     `${u.nombre} ${u.apellido} ${u.email}`.toLowerCase().includes(search.value.toLowerCase()),
   );
 });
+
+const formatDate = (date: string) => {
+  return new Date(date).toLocaleString("es-UY", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
 </script>
 
 <template>
@@ -69,6 +80,7 @@ const filteredUsers = computed(() => {
           <div>ID</div>
           <div>Usuario</div>
           <div>Email</div>
+          <div>Creado</div>
           <div>Rol</div>
           <div>Acciones</div>
         </div>
@@ -84,12 +96,20 @@ const filteredUsers = computed(() => {
 
           <div class="muted">{{ u.email }}</div>
 
+          <div class="muted">{{ formatDate(u.created_at) }}</div>
+
           <div>
             <span class="badge" :class="u.role">{{ u.role }}</span>
           </div>
 
           <div class="actions">
-            <button v-if="u.role !== 'admin'" class="btn">Ver</button>
+            <button
+              v-if="u.role !== 'admin'"
+              class="btn"
+              @click="$router.push(`/admin/usuarios/${u.id}`)"
+            >
+              Ver
+            </button>
 
             <button v-if="u.role !== 'admin'" class="btn danger">Desactivar</button>
           </div>
@@ -166,7 +186,7 @@ p {
 /* ROW */
 .row {
   display: grid;
-  grid-template-columns: 70px 1.5fr 1.5fr 120px 160px;
+  grid-template-columns: 70px 1.5fr 1.5fr 1.5fr 1fr 1fr;
   gap: 10px;
 
   padding: 12px 14px;
