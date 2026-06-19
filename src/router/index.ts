@@ -135,7 +135,7 @@ const router = createRouter({
         {
           path: "clientes",
           name: "Clientes",
-          component: { template: '<div style="padding:2rem">Clientes — en construcción</div>' },
+          component: () => import("@/modules/reservas/views/ClientesView.vue"),
         },
         {
           path: "disponibilidad",
