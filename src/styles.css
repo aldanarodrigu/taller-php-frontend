@@ -13,5 +13,5 @@ body,
 
 * {
   box-sizing: border-box;
-  border-radius: 0 !important;
+  border-radius: 3 !important;
 }

@@ -1,12 +1,12 @@
 <script setup lang="ts">
-//import AdminStatsCards from "../components/AdminStatsCards.vue";
+import DashboardCards from "../components/DashboardCards.vue";
 </script>
 
 <template>
   <div class="admin-dashboard">
     <h1>Dashboard Admin</h1>
 
-    <AdminStatsCards />
+    <DashboardCards />
   </div>
 </template>
 
