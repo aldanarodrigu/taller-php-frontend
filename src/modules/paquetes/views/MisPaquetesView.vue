@@ -1,8 +1,17 @@
 <script setup lang="ts">
 import { onMounted, ref, reactive } from "vue";
 import { usePaquetesStore } from "@/modules/paquetes/stores/paquetes";
+import { http } from "@/modules/auth/api/http";
 
 const store = usePaquetesStore();
+<<<<<<< Updated upstream
+=======
+const mostrarModal = ref(false);
+const enviando = ref(false);
+const errorForm = ref("");
+const exitoForm = ref("");
+const misServicios = ref<any[]>([]);
+>>>>>>> Stashed changes
 
 const mostrarForm = ref(false);
 const guardando = ref(false);
@@ -14,6 +23,7 @@ const form = reactive({
   descripcion: "",
   cantidad_sesiones: 1,
   precio: 0,
+<<<<<<< Updated upstream
   vigencia_dias: null as number | null,
 });
 
@@ -30,6 +40,17 @@ function abrirForm() {
   errorForm.value = "";
   mostrarForm.value = true;
 }
+=======
+  vigencia_dias: 30,
+  servicio_ids: [] as number[],
+});
+
+onMounted(async () => {
+  store.listarMios();
+  const res = await http.get("/services/me");
+  misServicios.value = res.data;
+});
+>>>>>>> Stashed changes
 
 async function guardar() {
   if (!form.nombre || form.cantidad_sesiones < 1 || form.precio < 0) {
@@ -39,8 +60,18 @@ async function guardar() {
   guardando.value = true;
   errorForm.value = "";
   try {
+<<<<<<< Updated upstream
     await store.crear({ ...form });
     mostrarForm.value = false;
+=======
+    await store.crear({ ...form.value });
+    exitoForm.value = "Paquete creado correctamente.";
+    form.value = { nombre: "", descripcion: "", cantidad_sesiones: 1, precio: 0, vigencia_dias: 30, servicio_ids: [] };
+    setTimeout(() => {
+      mostrarModal.value = false;
+      exitoForm.value = "";
+    }, 1200);
+>>>>>>> Stashed changes
   } catch {
     errorForm.value = "Error al crear el paquete.";
   } finally {
@@ -86,6 +117,7 @@ async function eliminar(id: number) {
           </div>
           <span class="badge">{{ p.cantidad_sesiones }} sesiones</span>
         </div>
+<<<<<<< Updated upstream
 
         <div class="datos">
           <span class="precio">${{ p.precio }}</span>
@@ -93,6 +125,18 @@ async function eliminar(id: number) {
             ${{ (p.precio / p.cantidad_sesiones).toFixed(0) }} c/u
           </span>
           <span v-if="p.vigencia_dias" class="detalle">· {{ p.vigencia_dias }} días</span>
+=======
+        <h2>{{ p.nombre }}</h2>
+        <p class="descripcion">{{ p.descripcion }}</p>
+        <p v-if="p.servicios?.length" class="detalle">
+          Servicios: {{ p.servicios.map((s: any) => s.nombre).join(", ") }}
+        </p>
+        <p v-else class="detalle" style="color:#ef4444">Sin servicios asignados</p>
+        <p class="detalle">Válido por {{ p.vigencia_dias ?? "—" }} días</p>
+        <div class="precio-box">
+          <p class="precio">${{ p.precio }}</p>
+          <p class="precio-sesion">${{ (p.precio / p.cantidad_sesiones).toFixed(0) }} por sesión</p>
+>>>>>>> Stashed changes
         </div>
 
         <button
@@ -133,10 +177,40 @@ async function eliminar(id: number) {
 
           <p v-if="errorForm" class="error">{{ errorForm }}</p>
 
+<<<<<<< Updated upstream
           <div class="acciones">
             <button class="btn-cancelar" @click="mostrarForm = false">Cancelar</button>
             <button class="btn-guardar" :disabled="guardando" @click="guardar">
               {{ guardando ? "Guardando..." : "Crear paquete" }}
+=======
+          <label>Servicios que incluye</label>
+          <div v-if="misServicios.length === 0" style="font-size:0.8rem; color:#6b7280">
+            No tenés servicios creados.
+          </div>
+          <div v-else style="display:flex; flex-direction:column; gap:0.35rem; max-height:140px; overflow-y:auto; border:1px solid #d1d5db; padding:0.5rem">
+            <label
+              v-for="s in misServicios"
+              :key="s.id"
+              style="display:flex; align-items:center; gap:0.5rem; font-size:0.8rem; font-weight:400; cursor:pointer"
+            >
+              <input
+                type="checkbox"
+                :value="s.id"
+                v-model="form.servicio_ids"
+                style="width:auto"
+              />
+              {{ s.nombre }}
+            </label>
+          </div>
+
+          <p v-if="errorForm" class="msg-error">{{ errorForm }}</p>
+          <p v-if="exitoForm" class="msg-exito">{{ exitoForm }}</p>
+
+          <div class="modal-acciones">
+            <button class="btn-cancelar" @click="mostrarModal = false">Cancelar</button>
+            <button class="btn-guardar" :disabled="enviando" @click="guardar">
+              {{ enviando ? "Guardando..." : "Guardar" }}
+>>>>>>> Stashed changes
             </button>
           </div>
         </div>

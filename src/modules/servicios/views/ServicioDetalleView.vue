@@ -5,6 +5,11 @@ import { useServiciosStore } from "@/modules/servicios/stores/servicios";
 import MapaServicio from "@/modules/servicios/components/MapaServicio.vue";
 import { reservasApi } from "@/modules/reservas/api/reservas";
 import { serviciosApi } from "@/modules/servicios/api/servicios";
+<<<<<<< Updated upstream
+=======
+import { calificacionesApi } from "@/modules/calificaciones/api/calificaciones";
+import { paquetesApi } from "@/modules/paquetes/api/paquetes";
+>>>>>>> Stashed changes
 
 import { useAuthStore } from "@/modules/auth/stores/auth";
 
@@ -25,6 +30,8 @@ const diaSinDisponibilidad = ref(false);
 const cargandoDisponibilidad = ref(false);
 const creandoReserva = ref(false);
 const errorReserva = ref<string | null>(null);
+const paquetesDisponibles = ref<any[]>([]);
+const paqueteClienteIdSeleccionado = ref<number | null>(null);
 
 const DIAS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sabado"];
 
@@ -114,7 +121,11 @@ async function abrirModal() {
   horarios.value = [];
   diaSinDisponibilidad.value = false;
   errorReserva.value = null;
+  paqueteClienteIdSeleccionado.value = null;
+  paquetesDisponibles.value = [];
   showModal.value = true;
+
+  const servicioId = Number(route.params.id);
 
   if (store.servicio?.profesional_id) {
     cargandoDisponibilidad.value = true;
@@ -127,6 +138,15 @@ async function abrirModal() {
       cargandoDisponibilidad.value = false;
     }
   }
+
+  if (authStore.user?.role === "cliente") {
+    try {
+      const res = await paquetesApi.paraServicio(servicioId);
+      paquetesDisponibles.value = res.data ?? [];
+    } catch {
+      paquetesDisponibles.value = [];
+    }
+  }
 }
 
 async function confirmarReserva() {
@@ -137,11 +157,15 @@ async function confirmarReserva() {
   creandoReserva.value = true;
   errorReserva.value = null;
   try {
-    await reservasApi.crear({
+    const payload: any = {
       servicio_id: Number(route.params.id),
       fecha: fecha.value,
       hora_inicio: horarioSeleccionado.value,
-    });
+    };
+    if (paqueteClienteIdSeleccionado.value) {
+      payload.paquete_cliente_id = paqueteClienteIdSeleccionado.value;
+    }
+    await reservasApi.crear(payload);
     showModal.value = false;
     router.push({ name: "Reservas" });
   } catch (e: any) {
@@ -336,7 +360,30 @@ async function confirmarReserva() {
           <p v-else class="horarios-estado">No hay horarios disponibles para este día.</p>
         </div>
 
+<<<<<<< Updated upstream
         <p v-if="errorReserva" class="modal-error">{{ errorReserva }}</p>
+=======
+        <div v-if="paquetesDisponibles.length > 0" class="paquete-section">
+          <p class="horarios-label">¿Usar sesión de un paquete?</p>
+          <div class="paquete-opciones">
+            <label class="paquete-opcion">
+              <input type="radio" :value="null" v-model="paqueteClienteIdSeleccionado" />
+              No, reservar sin paquete
+            </label>
+            <label
+              v-for="p in paquetesDisponibles"
+              :key="p.paquete_cliente_id"
+              class="paquete-opcion"
+            >
+              <input type="radio" :value="p.paquete_cliente_id" v-model="paqueteClienteIdSeleccionado" />
+              {{ p.nombre }}
+              <span class="paquete-sesiones">{{ p.sesiones_disponibles }} sesión{{ p.sesiones_disponibles !== 1 ? 'es' : '' }} disponible{{ p.sesiones_disponibles !== 1 ? 's' : '' }}</span>
+            </label>
+          </div>
+        </div>
+
+        <p v-if="errorReserva" class="error-msg">{{ errorReserva }}</p>
+>>>>>>> Stashed changes
 
         <div class="modal-actions">
           <button class="btn-cancelar-modal" @click="showModal = false">Cancelar</button>
@@ -877,5 +924,34 @@ h1 {
   background: #2563eb;
   border-color: #2563eb;
   color: white;
+}
+
+.paquete-section {
+  margin-top: 0.75rem;
+}
+
+.paquete-opciones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+}
+
+.paquete-opcion {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: #374151;
+  cursor: pointer;
+}
+
+.paquete-sesiones {
+  margin-left: auto;
+  font-size: 0.7rem;
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 0.1rem 0.4rem;
 }
 </style>

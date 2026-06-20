@@ -20,6 +20,24 @@ export const usePaquetesStore = defineStore("paquetes", () => {
     }
   }
 
+<<<<<<< Updated upstream
+=======
+  const misPaquetes = ref<any[]>([]);
+
+  async function listarMios() {
+    cargando.value = true;
+    error.value = "";
+    try {
+      const res = await paquetesApi.misPaquetesProfesional();
+      misPaquetes.value = Array.isArray(res.data) ? res.data : res.data.data ?? [];
+    } catch {
+      error.value = "Error al cargar los paquetes";
+    } finally {
+      cargando.value = false;
+    }
+  }
+
+>>>>>>> Stashed changes
   async function crear(datos: object) {
     await paquetesApi.crear(datos);
     await listar();
