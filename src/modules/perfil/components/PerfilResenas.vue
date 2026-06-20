@@ -11,7 +11,6 @@ interface Resena {
   puntuacion: number;
   comentario?: string;
   created_at: string;
-
   cliente: {
     user: {
       nombre: string;
@@ -19,9 +18,14 @@ interface Resena {
     };
   };
 }
+
 const resenas = ref<Resena[]>([]);
 const loading = ref(false);
 const error = ref<string | null>(null);
+
+function estrellas(n: number) {
+  return "★".repeat(n) + "☆".repeat(5 - n);
+}
 
 const cargarResenas = async () => {
   try {
@@ -34,8 +38,6 @@ const cargarResenas = async () => {
     }
 
     const url = `/professionals/${props.profesionalId}/reviews`;
-
-    console.log("GET:", url);
 
     const res = await http.get(url);
 
@@ -53,9 +55,7 @@ onMounted(cargarResenas);
 
 watch(
   () => props.profesionalId,
-  () => {
-    cargarResenas();
-  },
+  () => cargarResenas(),
   { immediate: true },
 );
 </script>
@@ -65,23 +65,31 @@ watch(
     <h3 class="titulo">Reseñas</h3>
 
     <div v-if="loading" class="estado">Cargando...</div>
-    <div v-else-if="error" class="estado error">{{ error }}</div>
+
+    <div v-else-if="error" class="estado error">
+      {{ error }}
+    </div>
+
     <div v-else-if="resenas.length === 0" class="estado">No hay reseñas todavía.</div>
 
     <ul v-else class="lista">
       <li v-for="r in resenas" :key="r.id" class="item">
         <div class="top">
           <span class="nombre">
-            {{ r.cliente?.user?.nombre ?? "Cliente" }}
-            {{ r.cliente?.user?.apellido ?? "" }}
+            {{ r.cliente?.user?.nombre }} {{ r.cliente?.user?.apellido }}
           </span>
-          <span class="estrellas"> ⭐ {{ r.puntuacion }}/5 </span>
+
+          <span class="estrellas">
+            {{ estrellas(r.puntuacion) }}
+          </span>
         </div>
 
         <p v-if="r.comentario" class="comentario">"{{ r.comentario }}"</p>
 
+        <p v-else class="comentario vacio">Sin comentario</p>
+
         <span class="fecha">
-          {{ new Date(r.created_at).toLocaleDateString() }}
+          {{ new Date(r.created_at).toLocaleDateString("es-UY") }}
         </span>
       </li>
     </ul>
@@ -135,6 +143,7 @@ watch(
 .top {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
   font-size: 0.875rem;
 }
 
@@ -145,12 +154,20 @@ watch(
 
 .estrellas {
   color: #f59e0b;
+  letter-spacing: 1px;
+  font-size: 1rem;
 }
 
 .comentario {
   margin: 6px 0 0;
   font-size: 0.875rem;
   color: #4b5563;
+}
+
+.comentario.vacio {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  font-style: italic;
 }
 
 .fecha {
