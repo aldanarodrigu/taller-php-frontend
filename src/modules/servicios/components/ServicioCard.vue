@@ -32,9 +32,10 @@ function irAlDetalle() {
         :class="{
           presencial: servicio.modalidad === 'presencial',
           online: servicio.modalidad === 'virtual',
+          hibrida: servicio.modalidad === 'hibrida',
         }"
       >
-        {{ servicio.modalidad }}
+        {{ servicio.modalidad === 'hibrida' ? 'Híbrida' : servicio.modalidad }}
       </span>
     </div>
 
@@ -86,19 +87,14 @@ function irAlDetalle() {
 .service-card {
   background: white;
   border: 0.5px solid #e5e7eb;
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
   margin-top: 20px;
-  transition:
-    transform 0.15s ease,
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
+  transition: border-color 0.15s ease;
 }
 .service-card:hover {
-  transform: translateY(-2px);
-  border-color: #d1d5db;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+  border-color: #2563eb;
 }
 
 .img-wrap {
@@ -122,11 +118,12 @@ function irAlDetalle() {
   position: absolute;
   top: 10px;
   left: 10px;
-  font-size: 11px;
-  padding: 3px 9px;
-  border-radius: 999px;
-  font-weight: 500;
-  text-transform: capitalize;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   border: 0.5px solid transparent;
 }
 .badge.presencial {
@@ -136,6 +133,10 @@ function irAlDetalle() {
 .badge.online {
   background: #dbeafe;
   color: #1d4ed8;
+}
+.badge.hibrida {
+  background: #fef3c7;
+  color: #b45309;
 }
 .badge:not(.presencial):not(.online) {
   background: rgba(255, 255, 255, 0.92);
@@ -155,8 +156,8 @@ function irAlDetalle() {
 }
 .nombre {
   margin: 0;
-  font-size: 0.82rem;
-  font-weight: 500;
+  font-size: 0.875rem;
+  font-weight: 600;
   color: #111827;
   line-height: 1.3;
   overflow: hidden;
@@ -164,14 +165,14 @@ function irAlDetalle() {
   white-space: nowrap;
 }
 .precio {
-  font-size: 0.82rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #111827;
   white-space: nowrap;
 }
 .desc {
   margin: 0 0 10px;
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   color: #6b7280;
   line-height: 1.45;
   display: -webkit-box;
@@ -201,15 +202,15 @@ function irAlDetalle() {
   border: 0.5px solid #e5e7eb;
 }
 .prof-name {
-  font-size: 0.7rem;
+  font-size: 0.73rem;
   color: #6b7280;
 }
 .meta {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.7rem;
-  color: #6b7280;
+  font-size: 0.73rem;
+  color: #9ca3af;
 }
 .rating {
   display: flex;

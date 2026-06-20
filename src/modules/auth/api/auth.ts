@@ -27,3 +27,8 @@ export const logoutRequest = async () => {
   const res = await http.post("/logout");
   return res.data;
 };
+
+export const completeGoogleRequest = async (data: { payload: string; role: string }) => {
+  const res = await http.post("/auth/google/complete", data);
+  return res.data;
+};

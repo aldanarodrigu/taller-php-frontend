@@ -116,10 +116,6 @@ const hayFiltros = computed(
         <i class="ti ti-x" aria-hidden="true" />
         Limpiar
       </button>
-
-      <button class="search-btn" aria-label="Buscar" @click="emitir">
-        <i class="ti ti-arrow-right" aria-hidden="true" />
-      </button>
     </div>
 
     <!-- Categorías -->
@@ -150,14 +146,13 @@ const hayFiltros = computed(
   align-items: center;
   background: white;
   border: 0.5px solid #d1d5db;
-  border-radius: 999px;
+  border-radius: 8px;
   padding: 6px 6px 6px 16px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   transition: border-color 0.15s;
   gap: 0;
 }
 .search-bar:focus-within {
-  border-color: #9ca3af;
+  border-color: #2563eb;
 }
 
 .search-main {
@@ -176,8 +171,8 @@ const hayFiltros = computed(
   border: none;
   background: transparent;
   outline: none;
-  font-size: 0.8rem;
-  color: #1a1a1a;
+  font-size: 0.875rem;
+  color: #111827;
   width: 100%;
   font-family: inherit;
 }
@@ -212,7 +207,7 @@ const hayFiltros = computed(
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   color: #6b7280;
   cursor: pointer;
   padding: 0 12px;
@@ -222,14 +217,14 @@ const hayFiltros = computed(
   font-family: inherit;
   height: 36px;
   transition: color 0.15s;
-  border-radius: 999px;
+  border-radius: 8px;
 }
 .filter-pill:hover {
   color: #374151;
 }
 .filter-pill.active {
-  color: #2563eb;
-  font-weight: 500;
+  color: #1d4ed8;
+  font-weight: 600;
 }
 .filter-pill.clear {
   color: #9ca3af;
@@ -254,7 +249,7 @@ const hayFiltros = computed(
   transform: translateX(-50%);
   background: white;
   border: 0.5px solid #e5e7eb;
-  border-radius: 10px;
+  border-radius: 8px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   min-width: 160px;
   z-index: 50;
@@ -279,15 +274,15 @@ const hayFiltros = computed(
   background: #f9fafb;
 }
 .dropdown-item.active {
-  color: #2563eb;
-  font-weight: 500;
+  color: #1d4ed8;
+  font-weight: 600;
 }
 .dropdown-item i {
   font-size: 15px;
   color: #9ca3af;
 }
 .dropdown-item.active i {
-  color: #2563eb;
+  color: #1d4ed8;
 }
 .check {
   margin-left: auto;
@@ -295,10 +290,10 @@ const hayFiltros = computed(
 }
 
 .search-btn {
-  background: #2563eb;
-  color: #dcfce7;
+  background: #1a1a1a;
+  color: white;
   border: none;
-  border-radius: 999px;
+  border-radius: 8px;
   width: 36px;
   height: 36px;
   display: flex;
@@ -308,10 +303,10 @@ const hayFiltros = computed(
   flex-shrink: 0;
   font-size: 16px;
   margin-left: 4px;
-  transition: background 0.15s;
+  transition: opacity 0.15s;
 }
 .search-btn:hover {
-  background: #2563eb;
+  opacity: 0.85;
 }
 
 /* Categorías */
@@ -326,33 +321,38 @@ const hayFiltros = computed(
   align-items: center;
   gap: 5px;
   border: 0.5px solid #d1d5db;
-  border-radius: 999px;
-  padding: 6px 14px;
-  font-size: 0.78rem;
-  color: #6b7280;
+  border-radius: 20px;
+  padding: 0.3rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #374151;
   background: white;
   cursor: pointer;
   white-space: nowrap;
   font-family: inherit;
-  transition: all 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    color 0.15s;
 }
 .cat i {
   font-size: 14px;
 }
 .cat:not(.active):hover {
-  background: #f3f4f6;
+  border-color: #2563eb;
+  color: #2563eb;
 }
 .cat.active {
-  background: #2563eb;
-  color: #dcfce7;
   border-color: #2563eb;
-  font-weight: 500;
+  background: #eff9ff;
+  color: #1d4ed8;
+  font-weight: 600;
 }
 
 @media (max-width: 640px) {
   .search-bar {
     flex-wrap: wrap;
-    border-radius: 12px;
+    border-radius: 8px;
     padding: 10px 12px;
     gap: 8px;
   }

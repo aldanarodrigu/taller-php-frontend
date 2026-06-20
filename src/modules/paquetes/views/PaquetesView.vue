@@ -1,53 +1,41 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { ref, onMounted } from "vue";
 import { usePaquetesStore } from "@/modules/paquetes/stores/paquetes";
-import { paquetesApi } from "@/modules/paquetes/api/paquetes";
 
 const store = usePaquetesStore();
-const tab = ref<"disponibles" | "mios">("disponibles");
 
-const comprando = ref<number | null>(null);
-const exito = ref<number | null>(null);
-const errorCompra = ref("");
+const paqueteSeleccionado = ref<any>(null);
+const pagoCargando = ref(false);
+const pagoError = ref("");
+const pagoExito = ref(false);
 
-const misPaquetes = ref<any[]>([]);
-const cargandoMios = ref(false);
+onMounted(() => store.listar());
 
-onMounted(() => {
-  store.listar();
-  cargarMios();
-});
-
-async function cargarMios() {
-  cargandoMios.value = true;
-  try {
-    const res = await paquetesApi.misPaquetes();
-    misPaquetes.value = Array.isArray(res.data) ? res.data : res.data.data ?? [];
-  } finally {
-    cargandoMios.value = false;
-  }
+function abrirPago(paquete: any) {
+  paqueteSeleccionado.value = paquete;
+  pagoError.value = "";
+  pagoExito.value = false;
 }
 
-async function comprar(id: number) {
-  comprando.value = id;
-  exito.value = null;
-  errorCompra.value = "";
+function cerrarModal() {
+  paqueteSeleccionado.value = null;
+  pagoError.value = "";
+  pagoExito.value = false;
+}
+
+async function confirmarPago() {
+  if (!paqueteSeleccionado.value) return;
+  pagoCargando.value = true;
+  pagoError.value = "";
   try {
-    await store.comprar(id);
-    exito.value = id;
-    await cargarMios();
-    setTimeout(() => (exito.value = null), 3000);
+    await store.comprar(paqueteSeleccionado.value.id);
+    pagoExito.value = true;
+    setTimeout(() => cerrarModal(), 1800);
   } catch {
-    errorCompra.value = "No se pudo completar la compra. Intentá de nuevo.";
+    pagoError.value = "No se pudo procesar el pago. Intentá de nuevo.";
   } finally {
-    comprando.value = null;
+    pagoCargando.value = false;
   }
-}
-
-function estadoColor(estado: string) {
-  if (estado === "activo") return "verde";
-  if (estado === "agotado") return "gris";
-  return "rojo";
 }
 </script>
 
@@ -55,98 +43,80 @@ function estadoColor(estado: string) {
   <div class="paquetes">
     <h1>Paquetes de Servicios</h1>
 
-    <div class="tabs">
-      <button :class="{ activo: tab === 'disponibles' }" @click="tab = 'disponibles'">
-        Disponibles
-      </button>
-      <button :class="{ activo: tab === 'mios' }" @click="tab = 'mios'">
-        Mis paquetes
-        <span v-if="misPaquetes.length" class="badge">{{ misPaquetes.length }}</span>
-      </button>
+    <div v-if="store.cargando">Cargando...</div>
+    <div v-else-if="store.error" class="error">{{ store.error }}</div>
+    <div v-else-if="store.paquetes.length === 0">No hay paquetes disponibles.</div>
+
+    <div v-else class="lista">
+      <div v-for="p in store.paquetes" :key="p.id" class="card">
+        <div class="card-header">
+          <span class="badge-sesiones">{{ p.cantidad_sesiones }} sesiones</span>
+        </div>
+        <h2>{{ p.nombre }}</h2>
+        <p class="descripcion">{{ p.descripcion }}</p>
+        <div class="detalle">
+          <p>Válido por {{ p.vigencia_dias ?? "—" }} días</p>
+        </div>
+        <div class="precio-box">
+          <p class="precio">${{ p.precio }}</p>
+          <p class="precio-sesion">
+            ${{ (p.precio / p.cantidad_sesiones).toFixed(0) }} por sesión
+          </p>
+        </div>
+        <button class="btn-comprar" @click="abrirPago(p)">
+          Comprar paquete
+        </button>
+      </div>
     </div>
-
-    <!-- DISPONIBLES -->
-    <template v-if="tab === 'disponibles'">
-      <div v-if="store.cargando">Cargando...</div>
-      <div v-else-if="store.error" class="error">{{ store.error }}</div>
-      <div v-else-if="store.paquetes.length === 0">No hay paquetes disponibles.</div>
-
-      <p v-if="errorCompra" class="error">{{ errorCompra }}</p>
-
-      <div v-else class="lista">
-        <div v-for="p in store.paquetes" :key="p.id" class="card">
-          <div class="card-header">
-            <span class="badge-sesiones">{{ p.cantidad_sesiones }} sesiones</span>
-          </div>
-
-          <h2>{{ p.nombre }}</h2>
-          <p class="descripcion">{{ p.descripcion }}</p>
-
-          <div class="detalle">
-            <p v-if="p.vigencia_dias">Válido por {{ p.vigencia_dias }} días</p>
-          </div>
-
-          <div class="precio-box">
-            <p class="precio">${{ p.precio }}</p>
-            <p class="precio-sesion">
-              ${{ (p.precio / p.cantidad_sesiones).toFixed(0) }} por sesión
-            </p>
-          </div>
-
-          <p v-if="exito === p.id" class="msg-exito">¡Paquete comprado!</p>
-          <button
-            v-else
-            class="btn-comprar"
-            :disabled="comprando === p.id"
-            @click="comprar(p.id)"
-          >
-            {{ comprando === p.id ? "Procesando..." : "Comprar paquete" }}
-          </button>
-        </div>
-      </div>
-    </template>
-
-    <!-- MIS PAQUETES -->
-    <template v-else>
-      <div v-if="cargandoMios">Cargando...</div>
-      <div v-else-if="misPaquetes.length === 0" class="vacio">
-        No compraste ningún paquete todavía.
-      </div>
-
-      <div v-else class="lista">
-        <div v-for="p in misPaquetes" :key="p.id" class="card">
-          <div class="card-header">
-            <span class="badge-sesiones">{{ p.cantidad_sesiones }} sesiones totales</span>
-            <span class="badge-estado" :class="estadoColor(p.clientes?.[0]?.pivot?.estado)">
-              {{ p.clientes?.[0]?.pivot?.estado ?? "—" }}
-            </span>
-          </div>
-
-          <h2>{{ p.nombre }}</h2>
-          <p class="descripcion">{{ p.descripcion }}</p>
-
-          <div class="sesiones-box">
-            <div class="sesiones-barra-wrap">
-              <div
-                class="sesiones-barra"
-                :style="{
-                  width: `${((p.clientes?.[0]?.pivot?.sesiones_disponibles ?? 0) / p.cantidad_sesiones) * 100}%`
-                }"
-              />
-            </div>
-            <p class="sesiones-texto">
-              {{ p.clientes?.[0]?.pivot?.sesiones_disponibles ?? 0 }} sesiones disponibles
-              de {{ p.cantidad_sesiones }}
-            </p>
-          </div>
-
-          <div class="detalle" v-if="p.clientes?.[0]?.pivot?.fecha_vencimiento">
-            <p>Vence: {{ new Date(p.clientes[0].pivot.fecha_vencimiento).toLocaleDateString('es-UY') }}</p>
-          </div>
-        </div>
-      </div>
-    </template>
   </div>
+
+  <!-- Modal de pago -->
+  <Teleport to="body">
+    <div v-if="paqueteSeleccionado" class="pago-overlay" @click.self="cerrarModal">
+      <div class="pago-form">
+
+        <div v-if="pagoExito" class="pago-exito">
+          <p class="exito-icono">✓</p>
+          <p class="exito-texto">¡Paquete adquirido con éxito!</p>
+        </div>
+
+        <template v-else>
+          <h3>Confirmar compra</h3>
+
+          <div class="pago-detalle">
+            <div class="pago-fila">
+              <span>Paquete</span>
+              <span>{{ paqueteSeleccionado.nombre }}</span>
+            </div>
+            <div class="pago-fila">
+              <span>Sesiones</span>
+              <span>{{ paqueteSeleccionado.cantidad_sesiones }} sesiones</span>
+            </div>
+            <div class="pago-fila">
+              <span>Vigencia</span>
+              <span>{{ paqueteSeleccionado.vigencia_dias ?? "—" }} días</span>
+            </div>
+            <div class="pago-fila total">
+              <span>Total</span>
+              <span>UYU {{ Number(paqueteSeleccionado.precio).toFixed(2) }}</span>
+            </div>
+          </div>
+
+          <div v-if="pagoError" class="error-msg">{{ pagoError }}</div>
+
+          <div class="pago-botones">
+            <button class="btn-link" :disabled="pagoCargando" @click="cerrarModal">
+              Cancelar
+            </button>
+            <button class="btn-save" :disabled="pagoCargando" @click="confirmarPago">
+              {{ pagoCargando ? "Procesando..." : "Confirmar pago" }}
+            </button>
+          </div>
+        </template>
+
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <style scoped>
@@ -157,42 +127,6 @@ h1 {
   font-weight: 600;
   color: #111827;
   margin-bottom: 1rem;
-}
-
-.tabs {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-  border-bottom: 1.5px solid #e5e7eb;
-  padding-bottom: 0;
-}
-
-.tabs button {
-  background: none;
-  border: none;
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  color: #6b7280;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1.5px;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.tabs button.activo {
-  color: #7c3aed;
-  border-bottom-color: #7c3aed;
-  font-weight: 500;
-}
-
-.tabs .badge {
-  background: #7c3aed;
-  color: white;
-  border-radius: 999px;
-  font-size: 0.7rem;
-  padding: 1px 6px;
 }
 
 .lista {
@@ -211,11 +145,7 @@ h1 {
   gap: 0.75rem;
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+.card-header { display: flex; justify-content: space-between; }
 
 .badge-sesiones {
   background: #f3e8ff;
@@ -226,37 +156,12 @@ h1 {
   font-weight: 500;
 }
 
-.badge-estado {
-  padding: 0.2rem 0.6rem;
-  border-radius: 20px;
-  font-size: 0.7rem;
-  font-weight: 500;
-  text-transform: capitalize;
-}
+h2 { font-size: 1rem; font-weight: 600; color: #111827; margin: 0; }
 
-.badge-estado.verde { background: #dcfce7; color: #16a34a; }
-.badge-estado.gris  { background: #f3f4f6; color: #6b7280; }
-.badge-estado.rojo  { background: #fee2e2; color: #dc2626; }
+.descripcion { font-size: 0.875rem; color: #6b7280; margin: 0; }
 
-h2 {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #111827;
-  margin: 0;
-}
-
-.descripcion {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin: 0;
-}
-
-.detalle {
-  font-size: 0.8rem;
-  color: #6b7280;
-}
-
-.detalle p { margin: 0; }
+.detalle { font-size: 0.875rem; color: #6b7280; }
+.detalle p { margin: 0.25rem 0; }
 
 .precio-box {
   background: #f5f3ff;
@@ -265,44 +170,8 @@ h2 {
   padding: 0.75rem 1rem;
 }
 
-.precio {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #7c3aed;
-  margin: 0;
-}
-
-.precio-sesion {
-  font-size: 0.75rem;
-  color: #6b7280;
-  margin: 0;
-}
-
-.sesiones-box {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.sesiones-barra-wrap {
-  background: #e9d5ff;
-  border-radius: 999px;
-  height: 8px;
-  overflow: hidden;
-}
-
-.sesiones-barra {
-  background: #7c3aed;
-  height: 100%;
-  border-radius: 999px;
-  transition: width 0.3s;
-}
-
-.sesiones-texto {
-  font-size: 0.8rem;
-  color: #6b7280;
-  margin: 0;
-}
+.precio { font-size: 1.5rem; font-weight: 700; color: #7c3aed; margin: 0; }
+.precio-sesion { font-size: 0.75rem; color: #6b7280; margin: 0; }
 
 .btn-comprar {
   background: #7c3aed;
@@ -316,29 +185,124 @@ h2 {
   width: 100%;
   margin-top: auto;
 }
+.btn-comprar:hover { background: #6d28d9; }
 
-.btn-comprar:hover:not(:disabled) { background: #6d28d9; }
-.btn-comprar:disabled { opacity: 0.6; cursor: not-allowed; }
+.error { color: #dc2626; font-size: 0.875rem; }
 
-.msg-exito {
-  text-align: center;
-  color: #16a34a;
+/* Modal de pago */
+.pago-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.pago-form {
+  background: white;
+  border-radius: 12px;
+  padding: 1.75rem;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.pago-form h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.pago-detalle {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.pago-fila {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.pago-fila span:first-child { color: #6b7280; }
+
+.pago-fila.total {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 0.5rem;
+  margin-top: 0.25rem;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #111827;
+}
+
+.pago-fila.total span:first-child { color: #111827; }
+
+.pago-botones {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.btn-link {
+  background: none;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.btn-save {
+  background: #7c3aed;
+  color: white;
+  border: none;
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
+  cursor: pointer;
   font-size: 0.875rem;
   font-weight: 500;
-  padding: 0.5rem;
-  background: #f0fdf4;
-  border-radius: 8px;
-  margin-top: auto;
+}
+.btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-save:not(:disabled):hover { background: #6d28d9; }
+
+.error-msg { color: #dc2626; font-size: 0.875rem; }
+
+.pago-exito {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 0;
 }
 
-.vacio {
-  color: #9ca3af;
-  font-size: 0.875rem;
+.exito-icono {
+  font-size: 2.5rem;
+  color: #16a34a;
+  background: #dcfce7;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
 }
 
-.error {
-  color: #dc2626;
-  font-size: 0.875rem;
-  margin-bottom: 1rem;
+.exito-texto {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #16a34a;
+  margin: 0;
 }
 </style>

@@ -4,6 +4,7 @@ import { paquetesApi } from "@/modules/paquetes/api/paquetes";
 
 export const usePaquetesStore = defineStore("paquetes", () => {
   const paquetes = ref<any[]>([]);
+  const misPaquetes = ref<any[]>([]);
   const cargando = ref(false);
   const error = ref("");
 
@@ -20,10 +21,6 @@ export const usePaquetesStore = defineStore("paquetes", () => {
     }
   }
 
-<<<<<<< Updated upstream
-=======
-  const misPaquetes = ref<any[]>([]);
-
   async function listarMios() {
     cargando.value = true;
     error.value = "";
@@ -37,20 +34,19 @@ export const usePaquetesStore = defineStore("paquetes", () => {
     }
   }
 
->>>>>>> Stashed changes
   async function crear(datos: object) {
     await paquetesApi.crear(datos);
-    await listar();
+    await listarMios();
   }
 
   async function eliminar(id: number) {
     await paquetesApi.eliminar(id);
-    await listar();
+    misPaquetes.value = misPaquetes.value.filter((p) => p.id !== id);
   }
 
   async function comprar(id: number) {
     await paquetesApi.comprar(id);
   }
 
-  return { paquetes, cargando, error, listar, crear, eliminar, comprar };
+  return { paquetes, misPaquetes, cargando, error, listar, listarMios, crear, eliminar, comprar };
 });

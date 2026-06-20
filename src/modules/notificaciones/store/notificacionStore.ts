@@ -1,6 +1,9 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 
+import { echo } from "@/plugins/echo";
+import { useAuthStore } from "@/modules/auth/stores/auth";
+
 import { getNotifications, markAsRead, markAllAsRead } from "../api/notificacionesApi";
 
 import type { Notification } from "@/types/Notification";
@@ -11,20 +14,27 @@ export const useNotificationStore = defineStore("notifications", () => {
 
   const unreadCount = computed(() => notifications.value.filter((n) => !n.read_at).length);
 
+  // =========================
+  // LOAD INICIAL
+  // =========================
   const fetchNotifications = async () => {
     loading.value = true;
 
     try {
       const response = await getNotifications();
 
-      console.log(response);
-
-      notifications.value = response.data;
+      notifications.value = response.data.map((n: Notification) => ({
+        ...n,
+        read_at: n.read_at ?? null,
+      }));
     } finally {
       loading.value = false;
     }
   };
 
+  // =========================
+  // MARK AS READ
+  // =========================
   const markNotificationAsRead = async (id: string) => {
     await markAsRead(id);
 
@@ -43,11 +53,25 @@ export const useNotificationStore = defineStore("notifications", () => {
     });
   };
 
+  const iniciarTiempoReal = () => {
+    const authStore = useAuthStore();
+    const profesionalId = authStore.user?.profesional?.id;
+
+    if (!profesionalId) {
+      console.warn("iniciarTiempoReal: sin profesionalId, abortando");
+      return;
+    }
+
+    echo.private(`profesional.${profesionalId}`).listen("ReservationCreated", async () => {
+      await fetchNotifications(); // awaitar para asegurar que el store se actualiza antes de que Vue re-renderice
+    });
+  };
   return {
     notifications,
     loading,
     unreadCount,
     fetchNotifications,
+    iniciarTiempoReal,
     markNotificationAsRead,
     markEveryNotificationAsRead,
   };

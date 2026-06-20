@@ -8,8 +8,10 @@ body,
   min-height: 100%;
 
   background: #ffffff;
+  font-family: "Poppins", sans-serif;
 }
 
 * {
   box-sizing: border-box;
+  border-radius: 3 !important;
 }

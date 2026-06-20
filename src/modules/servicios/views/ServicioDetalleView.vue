@@ -5,11 +5,8 @@ import { useServiciosStore } from "@/modules/servicios/stores/servicios";
 import MapaServicio from "@/modules/servicios/components/MapaServicio.vue";
 import { reservasApi } from "@/modules/reservas/api/reservas";
 import { serviciosApi } from "@/modules/servicios/api/servicios";
-<<<<<<< Updated upstream
-=======
 import { calificacionesApi } from "@/modules/calificaciones/api/calificaciones";
 import { paquetesApi } from "@/modules/paquetes/api/paquetes";
->>>>>>> Stashed changes
 
 import { useAuthStore } from "@/modules/auth/stores/auth";
 
@@ -20,6 +17,15 @@ const store = useServiciosStore();
 const authStore = useAuthStore();
 
 const disponibilidadDetalle = ref<any[]>([]);
+
+const resenas = ref<any[]>([]);
+const promedioResenas = ref<number | null>(null);
+
+function calcularPromedio(lista: any[]) {
+  if (!lista.length) return null;
+  const suma = lista.reduce((acc, r) => acc + r.puntuacion, 0);
+  return Math.round((suma / lista.length) * 10) / 10;
+}
 
 const showModal = ref(false);
 const fecha = ref("");
@@ -100,7 +106,8 @@ function capitalize(str: string) {
 }
 
 onMounted(async () => {
-  await store.obtener(Number(route.params.id));
+  const id = Number(route.params.id);
+  await store.obtener(id);
   if (store.servicio?.profesional_id) {
     try {
       const res = await serviciosApi.disponibilidad(store.servicio.profesional_id);
@@ -108,6 +115,13 @@ onMounted(async () => {
     } catch {
       /* no crítico */
     }
+  }
+  try {
+    const res = await calificacionesApi.porServicio(id);
+    resenas.value = Array.isArray(res.data) ? res.data : res.data.data ?? [];
+    promedioResenas.value = calcularPromedio(resenas.value);
+  } catch {
+    /* no crítico */
   }
 });
 
@@ -167,7 +181,7 @@ async function confirmarReserva() {
     }
     await reservasApi.crear(payload);
     showModal.value = false;
-    router.push({ name: "Reservas" });
+    router.push({ name: "Compras" });
   } catch (e: any) {
     errorReserva.value = e?.response?.data?.error ?? "Error al crear la reserva.";
   } finally {
@@ -177,7 +191,7 @@ async function confirmarReserva() {
 </script>
 
 <template>
-  <div class="detalle-wrapper">
+  <div class="form-wrap">
     <button class="btn-volver" @click="volver">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
         <path
@@ -189,26 +203,27 @@ async function confirmarReserva() {
       Volver a servicios
     </button>
 
-    <div v-if="store.cargando" class="estado">Cargando...</div>
+    <p v-if="store.cargando" class="empty-text">Cargando...</p>
+    <div v-else-if="store.error" class="error-msg">{{ store.error }}</div>
 
-    <div v-else-if="store.error" class="estado error">
-      {{ store.error }}
-    </div>
-
-    <div v-else-if="store.servicio" class="layout">
-      <!-- Columna izquierda: info -->
-      <div class="col-info">
-        <div class="badges">
-          <span class="badge" :class="store.servicio.modalidad">
-            {{ store.servicio.modalidad === "presencial" ? "Presencial" : "Virtual" }}
-          </span>
-          <span v-if="store.servicio.videollamada" class="badge videollamada"> Videollamada </span>
+    <template v-else-if="store.servicio">
+      <!-- Card de información -->
+      <div class="form-card">
+        <div class="form-header">
+          <div>
+            <div class="badges">
+              <span
+                class="badge"
+                :class="store.servicio.modalidad === 'presencial' ? 'verde-claro' : store.servicio.modalidad === 'hibrida' ? 'naranja' : 'azul'"
+              >
+                {{ store.servicio.modalidad === "presencial" ? "Presencial" : store.servicio.modalidad === "hibrida" ? "Híbrida" : "Virtual" }}
+              </span>
+              <span v-if="store.servicio.videollamada" class="badge amarillo"> Videollamada </span>
+            </div>
+            <h3>{{ store.servicio.nombre }}</h3>
+            <p>{{ store.servicio.descripcion }}</p>
+          </div>
         </div>
-
-        <h1>{{ store.servicio.nombre }}</h1>
-        <p class="descripcion">{{ store.servicio.descripcion }}</p>
-
-        <div class="separador"></div>
 
         <div class="info-grid">
           <div class="info-item">
@@ -226,7 +241,7 @@ async function confirmarReserva() {
           <div class="info-item">
             <span class="info-label">Modalidad</span>
             <span class="info-valor">{{
-              store.servicio.modalidad === "presencial" ? "Presencial" : "Virtual"
+              store.servicio.modalidad === "presencial" ? "Presencial" : store.servicio.modalidad === "hibrida" ? "Híbrida" : "Virtual"
             }}</span>
           </div>
         </div>
@@ -273,13 +288,18 @@ async function confirmarReserva() {
             </li>
           </ul>
         </div>
-        <button v-if="authStore.user?.role === 'cliente'" class="btn-reservar" @click="abrirModal">
+
+        <button
+          v-if="authStore.user?.role === 'cliente'"
+          class="btn-save btn-reservar"
+          @click="abrirModal"
+        >
           Reservar este servicio
         </button>
       </div>
 
-      <!-- Columna derecha: mapa o visual virtual -->
-      <div class="col-mapa">
+      <!-- Card de mapa / placeholder virtual, a ancho completo -->
+      <div class="form-card col-mapa">
         <MapaServicio
           v-if="
             store.servicio.modalidad === 'presencial' &&
@@ -290,6 +310,10 @@ async function confirmarReserva() {
           :longitud="parseFloat(store.servicio.longitud)"
           :direccion="store.servicio.direccion"
         />
+        <div v-else-if="store.servicio.modalidad === 'hibrida'" class="virtual-placeholder">
+          <p>Modalidad híbrida</p>
+          <span>La modalidad de cada sesión se coordina directamente con el profesional</span>
+        </div>
         <div v-else class="virtual-placeholder">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -308,7 +332,36 @@ async function confirmarReserva() {
           <span>La sesión se realiza por videollamada desde cualquier lugar</span>
         </div>
       </div>
-    </div>
+      <!-- Calificaciones -->
+      <div class="form-card">
+        <div class="form-header">
+          <div>
+            <h3>
+              Calificaciones
+              <span v-if="promedioResenas !== null" class="promedio">
+                {{ promedioResenas }} / 5
+              </span>
+            </h3>
+            <p>{{ resenas.length }} {{ resenas.length === 1 ? "calificación" : "calificaciones" }}</p>
+          </div>
+        </div>
+
+        <p v-if="resenas.length === 0" class="empty-text">Todavía no hay calificaciones para este servicio.</p>
+
+        <div v-else class="resenas-lista">
+          <div v-for="r in resenas" :key="r.id" class="resena-item">
+            <div class="resena-header">
+              <span class="resena-autor">
+                {{ r.cliente?.user?.nombre ?? "Cliente" }}
+              </span>
+              <span class="resena-puntuacion">{{ r.puntuacion }} / 5</span>
+            </div>
+            <p v-if="r.comentario" class="resena-comentario">{{ r.comentario }}</p>
+          </div>
+        </div>
+      </div>
+
+    </template>
   </div>
 
   <!-- Formulario de reserva -->
@@ -331,7 +384,12 @@ async function confirmarReserva() {
         <div class="modal-form">
           <label>
             Fecha
-            <input type="date" v-model="fecha" :min="new Date().toISOString().slice(0, 10)" />
+            <input
+              class="input"
+              type="date"
+              v-model="fecha"
+              :min="new Date().toISOString().slice(0, 10)"
+            />
           </label>
         </div>
 
@@ -360,9 +418,6 @@ async function confirmarReserva() {
           <p v-else class="horarios-estado">No hay horarios disponibles para este día.</p>
         </div>
 
-<<<<<<< Updated upstream
-        <p v-if="errorReserva" class="modal-error">{{ errorReserva }}</p>
-=======
         <div v-if="paquetesDisponibles.length > 0" class="paquete-section">
           <p class="horarios-label">¿Usar sesión de un paquete?</p>
           <div class="paquete-opciones">
@@ -383,12 +438,11 @@ async function confirmarReserva() {
         </div>
 
         <p v-if="errorReserva" class="error-msg">{{ errorReserva }}</p>
->>>>>>> Stashed changes
 
         <div class="modal-actions">
-          <button class="btn-cancelar-modal" @click="showModal = false">Cancelar</button>
+          <button class="btn-link" @click="showModal = false">Cancelar</button>
           <button
-            class="btn-confirmar-modal"
+            class="btn-save"
             :disabled="creandoReserva || !fecha || !horarioSeleccionado"
             @click="confirmarReserva"
           >
@@ -401,12 +455,62 @@ async function confirmarReserva() {
 </template>
 
 <style scoped>
-.detalle-wrapper {
-  padding: 1.5rem 2rem;
-  font-family: "Poppins", sans-serif;
-  height: 100%;
+.form-wrap {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
+.form-card {
+  background: white;
+  border: 0.5px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 0.5px solid #e5e7eb;
+}
+
+.form-header h3 {
+  margin: 0.5rem 0 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.form-header p {
+  margin: 4px 0 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+.empty-text {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.error-msg {
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+}
+
+/* ── Volver ── */
 .btn-volver {
   display: inline-flex;
   align-items: center;
@@ -418,7 +522,6 @@ async function confirmarReserva() {
   border: none;
   cursor: pointer;
   padding: 0;
-  margin-bottom: 1.5rem;
   transition: color 0.15s;
 }
 
@@ -431,87 +534,57 @@ async function confirmarReserva() {
   color: #111827;
 }
 
-.estado {
-  font-size: 0.875rem;
-  color: #6b7280;
-}
-
-.estado.error {
-  color: #dc2626;
-}
-
-/* ── Layout dos columnas ── */
-.layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  align-items: start;
-}
-
-/* ── Columna info ── */
-.col-info {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
+/* ── Badges ── */
 .badges {
   display: flex;
   gap: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .badge {
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 0.25rem 0.65rem;
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
   border-radius: 20px;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
+  width: fit-content;
 }
 
-.badge.presencial {
-  background: #dcfce7;
-  color: #15803d;
+.badge.amarillo {
+  background: #fef9c3;
+  color: #854d0e;
 }
-
-.badge.virtual {
+.badge.azul {
   background: #dbeafe;
   color: #1d4ed8;
 }
-
-.badge.videollamada {
-  background: #fef3c7;
-  color: #92400e;
+.badge.verde-claro {
+  background: #dcfce7;
+  color: #166534;
 }
-
-h1 {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #111827;
-  margin: 0;
-  line-height: 1.2;
+.badge.verde {
+  background: #bbf7d0;
+  color: #15803d;
 }
-
-.descripcion {
-  font-size: 0.9375rem;
-  color: #4b5563;
-  line-height: 1.65;
-  margin: 0;
-}
-
-.separador {
-  height: 1px;
+.badge.gris {
   background: #f3f4f6;
+  color: #4b5563;
+}
+.badge.rojo {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+.badge.naranja {
+  background: #ffedd5;
+  color: #9a3412;
 }
 
+/* ── Info ── */
 .info-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 1rem;
 }
 
@@ -522,29 +595,30 @@ h1 {
 }
 
 .info-label {
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: 0.7rem;
+  font-weight: 600;
   color: #9ca3af;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .info-valor {
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #111827;
 }
 
 .info-valor.precio {
-  font-size: 1.375rem;
+  font-size: 1.125rem;
   color: #2563eb;
 }
 
+/* ── Dirección ── */
 .direccion {
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: #6b7280;
   background: #f9fafb;
   border-radius: 8px;
@@ -552,16 +626,17 @@ h1 {
 }
 
 .direccion svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   color: #9ca3af;
   flex-shrink: 0;
   margin-top: 1px;
 }
 
+/* ── Disponibilidad ── */
 .disponibilidad-detalle {
   background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  border: 0.5px solid #e5e7eb;
   border-radius: 8px;
   padding: 0.875rem 1rem;
   display: flex;
@@ -573,9 +648,9 @@ h1 {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  color: #6b7280;
+  color: #9ca3af;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin: 0;
@@ -600,7 +675,7 @@ h1 {
   display: flex;
   align-items: baseline;
   gap: 0.5rem;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
 }
 
 .dia {
@@ -614,54 +689,27 @@ h1 {
 }
 
 .pausa {
-  font-size: 0.78rem;
+  font-size: 0.73rem;
   color: #9ca3af;
   margin-left: 0.25rem;
 }
 
+/* ── Botón reservar ── */
 .btn-reservar {
-  padding: 0.875rem 1rem;
-  background: #2563eb;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  transition:
-    background 0.2s ease,
-    box-shadow 0.2s ease;
-  margin-top: auto;
+  width: fit-content;
+  padding: 10px 24px;
 }
 
-.btn-reservar svg {
-  width: 17px;
-  height: 17px;
-}
-
-.btn-reservar:hover {
-  background: #1d4ed8;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-}
-
-/* ── Columna mapa ── */
+/* ── Mapa / placeholder virtual ── */
 .col-mapa {
-  border-radius: 12px;
+  padding: 0;
   overflow: hidden;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-  min-height: 420px;
-  display: flex;
-  flex-direction: column;
+  min-height: 320px;
 }
 
 .col-mapa :deep(.mapa) {
   height: 100%;
-  min-height: 420px;
+  min-height: 320px;
   border-radius: 0;
 }
 
@@ -676,43 +724,87 @@ h1 {
   padding: 3rem 2rem;
   text-align: center;
   color: #6b7280;
+  min-height: 320px;
 }
 
 .virtual-placeholder svg {
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   color: #93c5fd;
 }
 
 .virtual-placeholder p {
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: #374151;
   margin: 0;
 }
 
 .virtual-placeholder span {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: #9ca3af;
-  max-width: 220px;
+  max-width: 280px;
 }
 
-/* ── Responsive ── */
-@media (max-width: 768px) {
-  .layout {
-    grid-template-columns: 1fr;
-  }
-
-  .col-mapa {
-    min-height: 280px;
-  }
-
-  .col-mapa :deep(.mapa) {
-    min-height: 280px;
-  }
+/* ── Botones genéricos (unificados) ── */
+.btn-save {
+  padding: 10px 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 8px;
+  border: none;
+  background: #1a1a1a;
+  color: white;
+  cursor: pointer;
+  white-space: nowrap;
 }
 
-/* ── Modal ── */
+.btn-save:hover {
+  opacity: 0.85;
+}
+.btn-save:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-link {
+  padding: 10px 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 8px;
+  border: 0.5px solid #d1d5db;
+  background: white;
+  color: #1a1a1a;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    border 0.15s,
+    color 0.15s;
+}
+
+.btn-link:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.input {
+  border: 0.5px solid #d1d5db;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border 0.15s;
+  background: white;
+  color: #111827;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.input:focus {
+  border-color: #2563eb;
+}
+
+/* ── Modal de reserva ── */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -720,20 +812,21 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: 500;
+  backdrop-filter: blur(2px);
 }
 
 .modal {
   background: white;
-  border-radius: 12px;
-  padding: 2rem;
+  border: 0.5px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.5rem;
   width: 100%;
   max-width: 420px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  font-family: "Poppins", sans-serif;
 }
 
 .modal-header {
@@ -743,8 +836,8 @@ h1 {
 }
 
 .modal-header h3 {
-  font-size: 1.125rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 600;
   color: #111827;
   margin: 0;
 }
@@ -767,7 +860,7 @@ h1 {
 }
 
 .modal-servicio {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: #6b7280;
   margin: 0;
   padding: 0.75rem 1rem;
@@ -784,36 +877,10 @@ h1 {
 .modal-form label {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  font-size: 0.8125rem;
+  gap: 6px;
+  font-size: 0.8rem;
   font-weight: 500;
-  color: #374151;
-}
-
-.modal-form input {
-  padding: 0.65rem 0.875rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  font-size: 0.9375rem;
-  font-family: "Poppins", sans-serif;
-  color: #111827;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.modal-form input:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-}
-
-.modal-error {
-  font-size: 0.8125rem;
-  color: #dc2626;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 6px;
-  padding: 0.6rem 0.875rem;
-  margin: 0;
+  color: #6b7280;
 }
 
 .modal-actions {
@@ -821,46 +888,10 @@ h1 {
   gap: 0.75rem;
 }
 
-.btn-cancelar-modal {
+.modal-actions .btn-link,
+.modal-actions .btn-save {
   flex: 1;
-  padding: 0.7rem;
-  border: 1.5px solid #e5e7eb;
-  border-radius: 8px;
-  background: white;
-  color: #6b7280;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: border-color 0.2s;
-}
-
-.btn-cancelar-modal:hover {
-  border-color: #9ca3af;
-}
-
-.btn-confirmar-modal {
-  flex: 2;
-  padding: 0.7rem;
-  border: none;
-  border-radius: 8px;
-  background: #2563eb;
-  color: white;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    background 0.2s,
-    box-shadow 0.2s;
-}
-
-.btn-confirmar-modal:hover:not(:disabled) {
-  background: #1d4ed8;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-}
-
-.btn-confirmar-modal:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+  text-align: center;
 }
 
 /* ── Horarios disponibles ── */
@@ -871,24 +902,23 @@ h1 {
 }
 
 .horarios-label {
-  font-size: 0.8125rem;
+  font-size: 0.8rem;
   font-weight: 500;
   color: #374151;
   margin: 0;
 }
 
 .horarios-estado {
-  font-size: 0.8125rem;
+  font-size: 0.8rem;
   color: #9ca3af;
   margin: 0;
 }
 
 .sin-disponibilidad {
-  font-size: 0.8125rem;
-  color: #92400e;
-  background: #fffbeb;
-  border: 1px solid #fde68a;
-  border-radius: 6px;
+  font-size: 0.8rem;
+  color: #9a3412;
+  background: #ffedd5;
+  border-radius: 8px;
   padding: 0.6rem 0.875rem;
   margin: 0;
 }
@@ -896,15 +926,15 @@ h1 {
 .horarios-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .horario {
-  padding: 0.4rem 0.85rem;
-  border: 1.5px solid #e5e7eb;
+  padding: 0.3rem 0.85rem;
+  border: 0.5px solid #d1d5db;
   border-radius: 20px;
   background: white;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   font-weight: 500;
   color: #374151;
   cursor: pointer;
@@ -912,7 +942,6 @@ h1 {
     border-color 0.15s,
     background 0.15s,
     color 0.15s;
-  font-family: "Poppins", sans-serif;
 }
 
 .horario:hover {
@@ -921,9 +950,64 @@ h1 {
 }
 
 .horario.activo {
-  background: #2563eb;
   border-color: #2563eb;
-  color: white;
+  background: #eff9ff;
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
+/* ── Reseñas ── */
+.promedio {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #2563eb;
+  margin-left: 0.5rem;
+}
+
+.resenas-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.resena-item {
+  padding: 0.75rem 1rem;
+  border: 0.5px solid #e5e7eb;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.resena-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.resena-autor {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.resena-puntuacion {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.resena-comentario {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .info-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .paquete-section {

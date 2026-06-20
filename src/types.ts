@@ -10,7 +10,7 @@ export interface User {
   nombre: string;
   apellido: string;
   email: string;
-  role: "profesional" | "cliente";
+  role: "profesional" | "cliente" | "admin";
   foto?: string | null;
   profesional?: Profesional;
 }
