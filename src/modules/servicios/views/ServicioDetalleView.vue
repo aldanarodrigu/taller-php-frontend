@@ -223,10 +223,18 @@ async function confirmarReserva() {
             class="profesional-avatar"
           />
           <div class="profesional-info">
-            <span class="profesional-nombre">
+            <router-link
+              class="profesional-nombre"
+              :to="{
+                name: 'ProfileUser',
+                params: {
+                  id: store.servicio.profesional?.user.id,
+                },
+              }"
+            >
               {{ store.servicio.profesional?.user.nombre }}
               {{ store.servicio.profesional?.user.apellido }}
-            </span>
+            </router-link>
             <span class="profesional-rating">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                 <path
@@ -482,9 +490,18 @@ async function confirmarReserva() {
               :key="p.paquete_cliente_id"
               class="paquete-opcion"
             >
-              <input type="radio" :value="p.paquete_cliente_id" v-model="paqueteClienteIdSeleccionado" />
+              <input
+                type="radio"
+                :value="p.paquete_cliente_id"
+                v-model="paqueteClienteIdSeleccionado"
+              />
               {{ p.nombre }}
-              <span class="paquete-sesiones">{{ p.sesiones_disponibles }} sesión{{ p.sesiones_disponibles !== 1 ? 'es' : '' }} disponible{{ p.sesiones_disponibles !== 1 ? 's' : '' }}</span>
+              <span class="paquete-sesiones"
+                >{{ p.sesiones_disponibles }} sesión{{
+                  p.sesiones_disponibles !== 1 ? "es" : ""
+                }}
+                disponible{{ p.sesiones_disponibles !== 1 ? "s" : "" }}</span
+              >
             </label>
           </div>
         </div>
