@@ -193,17 +193,17 @@ onMounted(async () => {
           <div v-for="p in paquetes" :key="p.id" class="card-paquete">
             <div class="card-paquete-header">
               <h4>{{ p.nombre }}</h4>
-              <span class="badge" :class="ESTADOS_PAQUETE[p.pivot?.estado] ?? 'gris'">
-                {{ p.pivot?.estado ?? "—" }}
+              <span class="badge" :class="ESTADOS_PAQUETE[p.clientes?.[0]?.pivot?.estado] ?? 'gris'">
+                {{ p.clientes?.[0]?.pivot?.estado ?? "—" }}
               </span>
             </div>
             <p class="card-paquete-desc">{{ p.descripcion }}</p>
             <p class="card-paquete-sesiones">
-              {{ p.pivot?.sesiones_disponibles ?? 0 }} de {{ p.cantidad_sesiones }} sesiones disponibles
+              {{ p.clientes?.[0]?.pivot?.sesiones_disponibles ?? 0 }} de {{ p.cantidad_sesiones }} sesiones disponibles
             </p>
             <div class="card-paquete-footer">
-              <span v-if="p.pivot?.fecha_compra">Comprado el {{ formatFecha(p.pivot.fecha_compra) }}</span>
-              <span v-if="p.pivot?.fecha_vencimiento">Vence el {{ formatFecha(p.pivot.fecha_vencimiento) }}</span>
+              <span v-if="p.clientes?.[0]?.pivot?.fecha_compra">Comprado el {{ formatFecha(p.clientes[0].pivot.fecha_compra) }}</span>
+              <span v-if="p.clientes?.[0]?.pivot?.fecha_vencimiento">Vence el {{ formatFecha(p.clientes[0].pivot.fecha_vencimiento) }}</span>
             </div>
           </div>
         </div>

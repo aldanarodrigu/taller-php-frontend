@@ -131,7 +131,7 @@ const mensajeEstado = computed(() => {
       : "Tenés una reserva pendiente de confirmación.",
     confirmada: esCliente
       ? "Reserva confirmada. Completá el pago para asegurar tu lugar."
-      : "Reserva confirmada. Podés iniciar la sesión cuando corresponda.",
+      : "Reserva confirmada. Esperando el pago del cliente.",
     pagada: esCliente
       ? `Pago recibido. Te esperamos el ${store.reserva?.fecha ?? ""}.`
       : "Pago recibido. Iniciá la sesión cuando corresponda.",
