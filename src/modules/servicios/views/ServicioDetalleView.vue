@@ -115,7 +115,7 @@ onMounted(async () => {
   }
   try {
     const res = await calificacionesApi.porServicio(id);
-    resenas.value = Array.isArray(res.data) ? res.data : res.data.data ?? [];
+    resenas.value = Array.isArray(res.data) ? res.data : (res.data.data ?? []);
     promedioResenas.value = calcularPromedio(resenas.value);
   } catch {
     /* no crítico */
@@ -189,14 +189,59 @@ async function confirmarReserva() {
     <template v-else-if="store.servicio">
       <!-- Card de información -->
       <div class="form-card">
+        <div class="profesional-strip" v-if="store.servicio.profesional">
+          <img
+            :src="
+              store.servicio.profesional?.foto ||
+              'https://ui-avatars.com/api/?name=' +
+                store.servicio.profesional?.user.nombre +
+                '+' +
+                store.servicio.profesional?.user.apellido +
+                '&size=80&bold=true'
+            "
+            :alt="store.servicio.profesional?.user.nombre"
+            class="profesional-avatar"
+          />
+          <div class="profesional-info">
+            <span class="profesional-nombre">
+              {{ store.servicio.profesional?.user.nombre }}
+              {{ store.servicio.profesional?.user.apellido }}
+            </span>
+            <span class="profesional-rating">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path
+                  d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l1.83 4.401 4.753.381c1.164.093 1.636 1.545.749 2.305l-3.62 3.106 1.106 4.637c.27 1.136-.96 2.033-1.96 1.425L12 16.847l-4.07 2.618c-1 .608-2.23-.29-1.96-1.425l1.106-4.637-3.62-3.106c-.887-.76-.415-2.212.749-2.305l4.753-.38 1.83-4.402z"
+                />
+              </svg>
+              {{
+                store.servicio.profesional?.puntuacion_promedio > 0
+                  ? store.servicio.profesional.puntuacion_promedio
+                  : "Nuevo"
+              }}
+            </span>
+          </div>
+        </div>
+
         <div class="form-header">
           <div>
             <div class="badges">
               <span
                 class="badge"
-                :class="store.servicio.modalidad === 'presencial' ? 'verde-claro' : store.servicio.modalidad === 'hibrida' ? 'naranja' : 'azul'"
+                :class="
+                  store.servicio.modalidad === 'presencial'
+                    ? 'verde-claro'
+                    : store.servicio.modalidad === 'hibrida'
+                      ? 'naranja'
+                      : 'azul'
+                "
               >
-                {{ store.servicio.modalidad === "presencial" ? "Presencial" : store.servicio.modalidad === "hibrida" ? "Híbrida" : "Virtual" }}
+                {{
+                  store.servicio.modalidad === "presencial"
+                    ? "Presencial"
+                    : store.servicio.modalidad === "hibrida"
+                      ? "Híbrida"
+                      : "Virtual"
+                }}
               </span>
               <span v-if="store.servicio.videollamada" class="badge amarillo"> Videollamada </span>
             </div>
@@ -221,7 +266,11 @@ async function confirmarReserva() {
           <div class="info-item">
             <span class="info-label">Modalidad</span>
             <span class="info-valor">{{
-              store.servicio.modalidad === "presencial" ? "Presencial" : store.servicio.modalidad === "hibrida" ? "Híbrida" : "Virtual"
+              store.servicio.modalidad === "presencial"
+                ? "Presencial"
+                : store.servicio.modalidad === "hibrida"
+                  ? "Híbrida"
+                  : "Virtual"
             }}</span>
           </div>
         </div>
@@ -322,11 +371,15 @@ async function confirmarReserva() {
                 {{ promedioResenas }} / 5
               </span>
             </h3>
-            <p>{{ resenas.length }} {{ resenas.length === 1 ? "calificación" : "calificaciones" }}</p>
+            <p>
+              {{ resenas.length }} {{ resenas.length === 1 ? "calificación" : "calificaciones" }}
+            </p>
           </div>
         </div>
 
-        <p v-if="resenas.length === 0" class="empty-text">Todavía no hay calificaciones para este servicio.</p>
+        <p v-if="resenas.length === 0" class="empty-text">
+          Todavía no hay calificaciones para este servicio.
+        </p>
 
         <div v-else class="resenas-lista">
           <div v-for="r in resenas" :key="r.id" class="resena-item">
@@ -340,7 +393,6 @@ async function confirmarReserva() {
           </div>
         </div>
       </div>
-
     </template>
   </div>
 
@@ -493,6 +545,49 @@ async function confirmarReserva() {
 
 .btn-volver:hover {
   color: #111827;
+}
+
+/* ── Profesional (franja compacta) ── */
+.profesional-strip {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 0.5px solid #e5e7eb;
+}
+
+.profesional-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 0.5px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+.profesional-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.profesional-nombre {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.profesional-rating {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.75rem;
+  color: #f59e0b;
+}
+
+.profesional-rating svg {
+  width: 12px;
+  height: 12px;
 }
 
 /* ── Badges ── */

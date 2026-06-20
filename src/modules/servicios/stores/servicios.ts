@@ -5,7 +5,7 @@ import type { Servicio, ServicioConProfesional } from "@/types";
 
 export const useServiciosStore = defineStore("servicios", () => {
   const servicios = ref<Servicio[]>([]);
-  const servicio = ref<Servicio | null>(null);
+  const servicio = ref<ServicioConProfesional | null>(null);
   const serviciosConProfesional = ref<ServicioConProfesional[]>([]);
   const cargando = ref(false);
   const error = ref<string | null>(null);
