@@ -4,12 +4,14 @@ import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/modules/auth/stores/auth";
 import PerfilHeader from "@/modules/perfil/components/PerfilHeader.vue";
 import PerfilServicios from "@/modules/perfil/components/PerfilServices.vue";
+import PerfilPaquetes from "@/modules/perfil/components/PerfilPaquetes.vue";
 import { http } from "@/modules/auth/api/http";
 import type { User } from "@/types";
 
 const authStore = useAuthStore();
 const route = useRoute();
 const router = useRouter();
+
 const profileUser = ref<User | null>(null);
 const loading = ref(!authStore.loaded && !authStore.user);
 const error = ref<string | null>(null);
@@ -39,9 +41,7 @@ const loadProfile = async () => {
   }
 };
 
-onMounted(() => {
-  loadProfile();
-});
+onMounted(loadProfile);
 
 watch(
   () => route.params.id,
@@ -60,13 +60,23 @@ const handleEditProfile = () => {
     <div v-if="loading" class="loading">
       <p>Cargando perfil...</p>
     </div>
+
     <div v-else-if="error" class="error">
       <p>{{ error }}</p>
       <button @click="$router.back()">Volver</button>
     </div>
+
     <div v-else-if="profileUser" class="perfil-contenido">
       <PerfilHeader :user="profileUser" :auth-user="authStore.user" @edit="handleEditProfile" />
+
+      <!-- SERVICIOS -->
       <PerfilServicios
+        :profesional-id="profileUser.profesional?.id"
+        :es-propietario="authStore.user?.id === profileUser.id"
+      />
+
+      <!-- PAQUETES -->
+      <PerfilPaquetes
         :profesional-id="profileUser.profesional?.id"
         :es-propietario="authStore.user?.id === profileUser.id"
       />

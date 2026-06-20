@@ -5,29 +5,26 @@ import { useRouter } from "vue-router";
 
 const router = useRouter();
 
-const irADetalle = (id: number) => {
-  router.push(`/app/servicios/${id}`);
-};
+const irADetalle = (id: number) => {};
 
 const props = defineProps<{
   profesionalId?: number | null;
   esPropietario: boolean;
 }>();
 
-interface Servicio {
+interface Paquete {
   id: number;
   nombre: string;
-  tipo: string;
-  modalidad: string;
+  descripcion?: string;
+  cantidad_sesiones: number;
   precio: string;
-  duracion_minutos: number;
 }
 
-const servicios = ref<Servicio[]>([]);
+const paquetes = ref<Paquete[]>([]);
 const loading = ref(false);
 const error = ref<string | null>(null);
 
-const cargarServicios = async () => {
+const cargarPaquetes = async () => {
   try {
     loading.value = true;
     error.value = null;
@@ -35,65 +32,67 @@ const cargarServicios = async () => {
     let url = "";
 
     if (props.esPropietario) {
-      url = "/services/me";
+      url = "/packages/mis-paquetes-profesional";
     } else {
       if (props.profesionalId == null) {
-        servicios.value = [];
+        paquetes.value = [];
         return;
       }
-      url = `/services/profesional/${props.profesionalId}`;
+      url = `/packages/profesional/${props.profesionalId}`;
     }
 
     console.log("GET:", url);
 
     const res = await http.get(url);
 
-    // Soporta API que devuelva array o {data: []}
-    servicios.value = Array.isArray(res.data) ? res.data : (res.data?.data ?? []);
+    // soporta array o {data: []}
+    paquetes.value = Array.isArray(res.data) ? res.data : (res.data?.data ?? []);
   } catch (e) {
     console.error(e);
-    error.value = "Error al cargar los servicios";
-    servicios.value = [];
+    error.value = "Error al cargar los paquetes";
+    paquetes.value = [];
   } finally {
     loading.value = false;
   }
 };
 
-onMounted(cargarServicios);
+onMounted(cargarPaquetes);
 
 watch(
   () => [props.profesionalId, props.esPropietario],
   () => {
-    cargarServicios();
+    cargarPaquetes();
   },
   { immediate: true },
 );
 </script>
 
 <template>
-  <div class="servicios-card">
-    <h3 class="titulo">Servicios</h3>
+  <div class="paquetes-card">
+    <h3 class="titulo">Paquetes</h3>
 
     <div v-if="loading" class="estado">Cargando...</div>
     <div v-else-if="error" class="estado error">{{ error }}</div>
-    <div v-else-if="servicios.length === 0" class="estado">No hay servicios cargados.</div>
+    <div v-else-if="paquetes.length === 0" class="estado">No hay paquetes cargados.</div>
 
     <ul v-else class="lista">
       <li
-        v-for="servicio in servicios"
-        :key="servicio.id"
+        v-for="paquete in paquetes"
+        :key="paquete.id"
         class="item"
-        @click="irADetalle(servicio.id)"
+        @click="irADetalle(paquete.id)"
       >
-        <span class="nombre">{{ servicio.nombre }}</span>
-        <span class="precio">${{ servicio.precio }} / sesión</span>
+        <span class="nombre">{{ paquete.nombre }}</span>
+        <span class="precio">
+          ${{ paquete.precio }} / {{ paquete.cantidad_sesiones }} sesiones
+        </span>
       </li>
     </ul>
   </div>
 </template>
 
 <style scoped>
-.servicios-card {
+.paquetes-card {
   background: white;
   border: 0.5px solid #e5e7eb;
   border-radius: 10px;
@@ -149,9 +148,8 @@ watch(
   color: #6b7280;
 }
 
-/* responsive */
 @media (max-width: 768px) {
-  .servicios-card {
+  .paquetes-card {
     padding: 1rem;
   }
 
