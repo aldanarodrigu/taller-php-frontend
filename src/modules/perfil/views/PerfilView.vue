@@ -5,6 +5,7 @@ import { useAuthStore } from "@/modules/auth/stores/auth";
 import PerfilHeader from "@/modules/perfil/components/PerfilHeader.vue";
 import PerfilServicios from "@/modules/perfil/components/PerfilServices.vue";
 import PerfilPaquetes from "@/modules/perfil/components/PerfilPaquetes.vue";
+import PerfiResenas from "@/modules/perfil/components/PerfilResenas.vue";
 import { http } from "@/modules/auth/api/http";
 import type { User } from "@/types";
 
@@ -80,6 +81,9 @@ const handleEditProfile = () => {
         :profesional-id="profileUser.profesional?.id"
         :es-propietario="authStore.user?.id === profileUser.id"
       />
+
+      <!-- RESEÑAS -->
+      <PerfiResenas :profesional-id="profileUser.profesional?.id" />
     </div>
   </div>
 </template>
