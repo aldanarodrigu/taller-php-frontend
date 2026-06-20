@@ -627,6 +627,7 @@ onMounted(async () => {
   margin-bottom: 1.5rem;
   padding-bottom: 1.25rem;
   border-bottom: 0.5px solid #e5e7eb;
+  flex-wrap: wrap;
 }
 
 .form-header h3 {
@@ -658,13 +659,9 @@ onMounted(async () => {
 .notification-item {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 1rem;
-  padding: 12px 14px;
-  border: 0.5px solid #d1d5db;
-  border-radius: 8px;
-  background: white;
-  transition: border 0.15s;
+  flex-wrap: wrap;
 }
 
 .content {
@@ -920,5 +917,30 @@ onMounted(async () => {
 .exc-badge.verde {
   background: #dcfce7;
   color: #15803d;
+}
+
+@media (max-width: 768px) {
+  .form-wrap {
+    padding: 12px;
+  }
+
+  .form-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-save {
+    width: 100%;
+  }
+
+  .notification-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-link {
+    width: 100%;
+    text-align: center;
+  }
 }
 </style>

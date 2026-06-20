@@ -18,6 +18,7 @@ import AdminSidebar from "@/components/AdminSidebar.vue";
   min-height: 100vh;
 }
 
+/* desktop */
 .admin-content {
   flex: 1;
   margin-left: 240px;
@@ -25,11 +26,16 @@ import AdminSidebar from "@/components/AdminSidebar.vue";
   background: #f9fafb;
 }
 
+/* tablet + mobile */
 @media (max-width: 768px) {
-  .main-content {
+  .admin-layout {
+    flex-direction: column;
+  }
+
+  .admin-content {
     margin-left: 0;
-    padding: 1rem;
-    padding-top: 4rem;
+    padding: 16px;
+    padding-top: 70px; /* espacio si sidebar pasa a top */
   }
 }
 </style>
