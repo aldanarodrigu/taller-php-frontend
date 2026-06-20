@@ -68,8 +68,8 @@ async function cargarNombreServicio(servicioId: number) {
 
 // --- Paquetes ---
 const paquetes = ref<any[]>([]);
-const cargandoPaquetes = ref(false);
 const errorPaquetes = ref("");
+const cargando = ref(true);
 
 const ESTADOS_PAQUETE: Record<string, string> = {
   activo: "verde-claro",
@@ -78,23 +78,19 @@ const ESTADOS_PAQUETE: Record<string, string> = {
 };
 
 async function cargarPaquetes() {
-  cargandoPaquetes.value = true;
-  errorPaquetes.value = "";
   try {
     const res = await paquetesApi.misPaquetes();
     paquetes.value = Array.isArray(res.data) ? res.data : res.data.data ?? [];
   } catch {
     errorPaquetes.value = "Error al cargar tus paquetes.";
-  } finally {
-    cargandoPaquetes.value = false;
   }
 }
 
 onMounted(async () => {
-  await store.listar();
+  await Promise.all([store.listar(), cargarPaquetes()]);
   const ids = [...new Set(store.reservas.map((r) => r.servicio_id))];
   ids.forEach(cargarNombreServicio);
-  await cargarPaquetes();
+  cargando.value = false;
 });
 </script>
 
@@ -125,10 +121,11 @@ onMounted(async () => {
         </button>
       </div>
 
+      <p v-if="cargando" class="empty-text">Cargando...</p>
+
       <!-- Tab reservas -->
-      <template v-if="tab === 'reservas'">
-        <p v-if="store.cargando" class="empty-text">Cargando...</p>
-        <div v-else-if="store.error" class="error-msg">{{ store.error }}</div>
+      <template v-else-if="tab === 'reservas'">
+        <div v-if="store.error" class="error-msg">{{ store.error }}</div>
         <p v-else-if="store.reservas.length === 0" class="empty-text">No tenés reservas aún.</p>
 
         <template v-else>
@@ -184,9 +181,8 @@ onMounted(async () => {
       </template>
 
       <!-- Tab paquetes -->
-      <template v-else>
-        <p v-if="cargandoPaquetes" class="empty-text">Cargando...</p>
-        <div v-else-if="errorPaquetes" class="error-msg">{{ errorPaquetes }}</div>
+      <template v-else-if="tab === 'paquetes'">
+        <div v-if="errorPaquetes" class="error-msg">{{ errorPaquetes }}</div>
         <p v-else-if="paquetes.length === 0" class="empty-text">No adquiriste ningún paquete aún.</p>
 
         <div v-else class="lista-paquetes">

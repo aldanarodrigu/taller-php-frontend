@@ -33,6 +33,7 @@ const horarioSeleccionado = ref("");
 const disponibilidades = ref<any[]>([]);
 const horarios = ref<string[]>([]);
 const diaSinDisponibilidad = ref(false);
+const cargando = ref(true);
 const cargandoDisponibilidad = ref(false);
 const creandoReserva = ref(false);
 const errorReserva = ref<string | null>(null);
@@ -108,21 +109,20 @@ function capitalize(str: string) {
 onMounted(async () => {
   const id = Number(route.params.id);
   await store.obtener(id);
-  if (store.servicio?.profesional_id) {
-    try {
-      const res = await serviciosApi.disponibilidad(store.servicio.profesional_id);
-      disponibilidadDetalle.value = res.data ?? [];
-    } catch {
-      /* no crítico */
-    }
-  }
-  try {
-    const res = await calificacionesApi.porServicio(id);
-    resenas.value = Array.isArray(res.data) ? res.data : res.data.data ?? [];
-    promedioResenas.value = calcularPromedio(resenas.value);
-  } catch {
-    /* no crítico */
-  }
+  await Promise.all([
+    store.servicio?.profesional_id
+      ? serviciosApi.disponibilidad(store.servicio.profesional_id)
+          .then(res => { disponibilidadDetalle.value = res.data ?? []; })
+          .catch(() => {})
+      : Promise.resolve(),
+    calificacionesApi.porServicio(id)
+      .then(res => {
+        resenas.value = Array.isArray(res.data) ? res.data : res.data.data ?? [];
+        promedioResenas.value = calcularPromedio(resenas.value);
+      })
+      .catch(() => {}),
+  ]);
+  cargando.value = false;
 });
 
 function volver() {
@@ -203,7 +203,7 @@ async function confirmarReserva() {
       Volver a servicios
     </button>
 
-    <p v-if="store.cargando" class="empty-text">Cargando...</p>
+    <p v-if="cargando" class="empty-text">Cargando...</p>
     <div v-else-if="store.error" class="error-msg">{{ store.error }}</div>
 
     <template v-else-if="store.servicio">
