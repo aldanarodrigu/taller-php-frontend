@@ -7,7 +7,7 @@ const store = useServiciosStore();
 const router = useRouter();
 
 onMounted(() => {
-  store.listar();
+  store.listarConProfesional();
 });
 
 function verDetalle(id: number) {
@@ -27,13 +27,13 @@ function verDetalle(id: number) {
 
       <p v-if="store.cargando" class="empty-text">Cargando...</p>
       <div v-else-if="store.error" class="error-msg">{{ store.error }}</div>
-      <p v-else-if="store.servicios.length === 0" class="empty-text">
+      <p v-else-if="store.serviciosConProfesional.length === 0" class="empty-text">
         No hay servicios disponibles.
       </p>
 
       <div v-else class="lista">
         <div
-          v-for="servicio in store.servicios"
+          v-for="servicio in store.serviciosConProfesional"
           :key="servicio.id"
           class="card"
           @click="verDetalle(servicio.id)"
@@ -53,6 +53,12 @@ function verDetalle(id: number) {
             <p class="descripcion">{{ servicio.descripcion }}</p>
 
             <div class="meta">
+              <span class="meta-item meta-rating">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="color:#f59e0b">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+                {{ servicio.profesional?.puntuacion_promedio > 0 ? servicio.profesional.puntuacion_promedio : "Nuevo" }}
+              </span>
               <span class="meta-item">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                   <path
@@ -244,6 +250,11 @@ function verDetalle(id: number) {
   gap: 0.4rem;
   font-size: 0.8rem;
   color: #6b7280;
+}
+
+.meta-rating {
+  color: #f59e0b;
+  font-weight: 500;
 }
 
 .meta-item svg {
