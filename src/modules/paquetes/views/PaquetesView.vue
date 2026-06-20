@@ -42,7 +42,6 @@ async function confirmarPago() {
 <template>
   <div class="paquetes">
     <h1>Paquetes de Servicios</h1>
-    <p class="subtitulo">Comprá múltiples sesiones con descuento</p>
 
     <div v-if="store.cargando">Cargando...</div>
     <div v-else-if="store.error" class="error">{{ store.error }}</div>
@@ -127,13 +126,7 @@ h1 {
   font-size: 1.5rem;
   font-weight: 600;
   color: #111827;
-  margin-bottom: 0.25rem;
-}
-
-.subtitulo {
-  color: #6b7280;
-  font-size: 0.875rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .lista {
@@ -147,7 +140,6 @@ h1 {
   border-radius: 12px;
   padding: 1.5rem;
   border: 2px solid #e9d5ff;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
   display: flex;
   flex-direction: column;
   gap: 0.75rem;

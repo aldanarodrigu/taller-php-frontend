@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { usePaquetesStore } from "@/modules/paquetes/stores/paquetes";
+import { http } from "@/modules/auth/api/http";
 
 const store = usePaquetesStore();
 const mostrarModal = ref(false);
 const enviando = ref(false);
 const errorForm = ref("");
 const exitoForm = ref("");
+const misServicios = ref<any[]>([]);
 
 const form = ref({
   nombre: "",
@@ -14,9 +16,14 @@ const form = ref({
   cantidad_sesiones: 1,
   precio: 0,
   vigencia_dias: 30,
+  servicio_ids: [] as number[],
 });
 
-onMounted(() => store.listarMios());
+onMounted(async () => {
+  store.listarMios();
+  const res = await http.get("/services/me");
+  misServicios.value = Array.isArray(res.data) ? res.data : res.data.data ?? [];
+});
 
 async function guardar() {
   errorForm.value = "";
@@ -25,7 +32,7 @@ async function guardar() {
   try {
     await store.crear({ ...form.value });
     exitoForm.value = "Paquete creado correctamente.";
-    form.value = { nombre: "", descripcion: "", cantidad_sesiones: 1, precio: 0, vigencia_dias: 30 };
+    form.value = { nombre: "", descripcion: "", cantidad_sesiones: 1, precio: 0, vigencia_dias: 30, servicio_ids: [] };
     setTimeout(() => {
       mostrarModal.value = false;
       exitoForm.value = "";
@@ -66,12 +73,16 @@ async function borrar(id: number) {
     <div v-else class="lista">
       <div v-for="p in store.misPaquetes" :key="p.id" class="card">
         <div class="card-top">
-          <span class="badge">📦 {{ p.cantidad_sesiones }} sesiones</span>
+          <span class="badge">{{ p.cantidad_sesiones }} sesiones</span>
           <button class="btn-eliminar" @click="borrar(p.id)">Eliminar</button>
         </div>
         <h2>{{ p.nombre }}</h2>
         <p class="descripcion">{{ p.descripcion }}</p>
-        <p class="detalle">🕐 Válido por {{ p.vigencia_dias ?? "—" }} días</p>
+        <p v-if="p.servicios?.length" class="detalle">
+          Servicios: {{ p.servicios.map((s: any) => s.nombre).join(", ") }}
+        </p>
+        <p v-else class="detalle" style="color:#ef4444">Sin servicios asignados</p>
+        <p class="detalle">Válido por {{ p.vigencia_dias ?? "—" }} días</p>
         <div class="precio-box">
           <p class="precio">${{ p.precio }}</p>
           <p class="precio-sesion">${{ (p.precio / p.cantidad_sesiones).toFixed(0) }} por sesión</p>
@@ -98,6 +109,24 @@ async function borrar(id: number) {
 
           <label>Vigencia (días)</label>
           <input v-model.number="form.vigencia_dias" type="number" min="1" />
+
+          <label>Servicios que incluye</label>
+          <div v-if="misServicios.length === 0" style="font-size:0.8rem; color:#6b7280">
+            No tenés servicios creados.
+          </div>
+          <div
+            v-else
+            style="display:flex; flex-direction:column; gap:0.35rem; max-height:140px; overflow-y:auto; border:1px solid #d1d5db; padding:0.5rem; border-radius:6px"
+          >
+            <label
+              v-for="s in misServicios"
+              :key="s.id"
+              style="display:flex; align-items:center; gap:0.5rem; font-size:0.8rem; font-weight:400; cursor:pointer"
+            >
+              <input type="checkbox" :value="s.id" v-model="form.servicio_ids" style="width:auto" />
+              {{ s.nombre }}
+            </label>
+          </div>
 
           <p v-if="errorForm" class="msg-error">{{ errorForm }}</p>
           <p v-if="exitoForm" class="msg-exito">{{ exitoForm }}</p>
@@ -205,7 +234,6 @@ h2 { font-size: 1rem; font-weight: 600; color: #111827; margin: 0; }
 
 .error { color: #dc2626; font-size: 0.875rem; }
 
-/* Modal */
 .overlay {
   position: fixed;
   inset: 0;

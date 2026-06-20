@@ -38,11 +38,8 @@ const navPrincipal = [
   { to: "/app/reservas", label: "Reservas", soloProfesional: true },
   { to: "/app/compras", label: "Mis Compras", soloCliente: true },
   { to: "/app/clientes", label: "Clientes", soloProfesional: true },
-];
-
-const navGestionCliente = [
-  { to: "/app/servicios", label: "Servicios" },
-  { to: "/app/paquetes", label: "Paquetes" },
+  { to: "/app/servicios", label: "Servicios", soloCliente: true },
+  { to: "/app/paquetes", label: "Paquetes", soloCliente: true },
 ];
 
 const navGestionProfesional = [
@@ -96,20 +93,8 @@ const navCuenta = [
         </RouterLink>
       </template>
 
-      <span class="section-label">Gestión</span>
-      <template v-if="!esProfesional">
-        <RouterLink
-          v-for="item in navGestionCliente"
-          :key="item.to"
-          :to="item.to"
-          class="nav-item"
-          :class="{ active: isActive(item.to) }"
-          @click="cerrarMenu"
-        >
-          {{ item.label }}
-        </RouterLink>
-      </template>
-      <template v-else>
+      <template v-if="esProfesional">
+        <span class="section-label">Gestión</span>
         <RouterLink
           v-for="item in navGestionProfesional"
           :key="item.to"

@@ -4,6 +4,7 @@ import { paquetesApi } from "@/modules/paquetes/api/paquetes";
 
 export const usePaquetesStore = defineStore("paquetes", () => {
   const paquetes = ref<any[]>([]);
+  const misPaquetes = ref<any[]>([]);
   const cargando = ref(false);
   const error = ref("");
 
@@ -20,13 +21,11 @@ export const usePaquetesStore = defineStore("paquetes", () => {
     }
   }
 
-  const misPaquetes = ref<any[]>([]);
-
   async function listarMios() {
     cargando.value = true;
     error.value = "";
     try {
-      const res = await paquetesApi.listar();
+      const res = await paquetesApi.misPaquetesProfesional();
       misPaquetes.value = Array.isArray(res.data) ? res.data : res.data.data ?? [];
     } catch {
       error.value = "Error al cargar los paquetes";
