@@ -27,6 +27,7 @@ export const useReservasStore = defineStore("reservas", () => {
   async function obtener(id: number) {
     cargando.value = true;
     error.value = null;
+    accionError.value = null;
 
     try {
       const res = await reservasApi.obtener(id);
