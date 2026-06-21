@@ -391,21 +391,15 @@ onMounted(async () => {
           >
             <div>
               <strong>Esta reserva requiere reprogramación</strong>
+
               <p>
                 Fue afectada por un cambio de disponibilidad del profesional.
               </p>
+
               <p v-if="store.reserva.motivo_reprogramacion">
                 Motivo: {{ store.reserva.motivo_reprogramacion }}
               </p>
             </div>
-
-            <button
-              v-if="puedeReprogramar"
-              class="btn-reprogramar-inline"
-              @click="abrirFormReprogramar"
-            >
-              Reprogramar
-            </button>
           </div>
         
         <div v-if="mostrarFormReprogramar && puedeReprogramar" class="reprogramacion-form">
@@ -494,6 +488,14 @@ onMounted(async () => {
             @click="store.confirmar(store.reserva.id)"
           >
             {{ store.accionCargando ? "Procesando..." : "Confirmar reserva" }}
+          </button>
+          <button
+            v-if="puedeReprogramar"
+            class="btn-accion reprogramar"
+            :disabled="store.accionCargando"
+            @click="abrirFormReprogramar"
+          >
+            Reprogramar reserva
           </button>
           <button
             v-if="puedeCancelar"
@@ -1288,6 +1290,12 @@ onMounted(async () => {
   background: #eff9ff;
   color: #1d4ed8;
   font-weight: 600;
+}
+
+.btn-accion.reprogramar {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 0.5px solid #bfdbfe;
 }
 
 /* ── Responsive ── */
