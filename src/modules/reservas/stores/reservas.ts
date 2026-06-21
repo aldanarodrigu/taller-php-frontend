@@ -31,6 +31,11 @@ export const useReservasStore = defineStore("reservas", () => {
     try {
       const res = await reservasApi.obtener(id);
       reserva.value = res.data;
+
+      const idx = reservas.value.findIndex((r) => r.id === res.data.id);
+      if (idx !== -1) {
+        reservas.value[idx] = res.data;
+      }
     } catch {
       error.value = "Error al cargar la reserva";
     } finally {

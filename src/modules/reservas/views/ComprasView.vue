@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onActivated, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { useReservasStore } from "@/modules/reservas/stores/reservas";
 import { serviciosApi } from "@/modules/servicios/api/servicios";
@@ -52,18 +52,47 @@ function formatHora(hora: string) {
   return hora?.slice(0, 5);
 }
 
+function requiereReprogramacion(r: any) {
+  return (
+    r.requiere_reprogramacion === true ||
+    r.requiere_reprogramacion === 1 ||
+    r.requiere_reprogramacion === "1" ||
+    r.requiere_reprogramacion === "true"
+  );
+}
+
+function irAReprogramar(id: number) {
+  router.push({
+    name: "ReservaDetalle",
+    params: { id },
+    query: { reprogramar: "1" },
+  });
+}
+
 async function cargarNombreServicio(servicioId: number) {
   if (nombresServicios.value[servicioId]) return;
+
   try {
     const res = await serviciosApi.obtener(servicioId);
-    nombresServicios.value[servicioId] = res.data?.nombre ?? `Servicio #${servicioId}`;
+
+    nombresServicios.value[servicioId] =
+      res.data?.nombre ?? `Servicio #${servicioId}`;
+
     const prof = res.data?.profesional?.user;
+
     if (prof) {
       nombresProfesionales.value[servicioId] = `${prof.nombre} ${prof.apellido}`;
     }
   } catch {
     nombresServicios.value[servicioId] = `Servicio #${servicioId}`;
   }
+}
+
+async function cargarReservas() {
+  await store.listar();
+
+  const ids = [...new Set(store.reservas.map((r) => r.servicio_id))];
+  ids.forEach(cargarNombreServicio);
 }
 
 // --- Paquetes ---
@@ -86,11 +115,31 @@ async function cargarPaquetes() {
   }
 }
 
-onMounted(async () => {
-  await Promise.all([store.listar(), cargarPaquetes()]);
-  const ids = [...new Set(store.reservas.map((r) => r.servicio_id))];
-  ids.forEach(cargarNombreServicio);
+async function cargarDatos(mostrarCargando = false) {
+  if (mostrarCargando) {
+    cargando.value = true;
+  }
+
+  await Promise.all([cargarReservas(), cargarPaquetes()]);
+
   cargando.value = false;
+}
+
+function refrescarDatos() {
+  cargarDatos(false);
+}
+
+onMounted(async () => {
+  await cargarDatos(true);
+  window.addEventListener("focus", refrescarDatos);
+});
+
+onActivated(async () => {
+  await cargarDatos(false);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("focus", refrescarDatos);
 });
 </script>
 
@@ -163,6 +212,28 @@ onMounted(async () => {
                 <span class="badge" :class="ESTADOS_COLOR[r.estado]">
                   {{ ESTADOS_LABEL[r.estado] ?? r.estado }}
                 </span>
+
+                <div v-if="requiereReprogramacion(r)" class="reprogramacion-box">
+                  <div class="reprogramacion-texto">
+                    <span class="reprogramacion-titulo">Requiere reprogramación</span>
+
+                    <span v-if="r.motivo_reprogramacion" class="reprogramacion-motivo">
+                      {{ r.motivo_reprogramacion }}
+                    </span>
+
+                    <span v-else class="reprogramacion-motivo">
+                      Esta reserva fue afectada por un cambio de disponibilidad.
+                    </span>
+                  </div>
+
+                  <button
+                    class="btn-reprogramar"
+                    @click.stop="irAReprogramar(r.id)"
+                  >
+                    Reprogramar
+                  </button>
+                </div>
+
                 <h4>{{ nombresServicios[r.servicio_id] ?? "..." }}</h4>
                 <p v-if="nombresProfesionales[r.servicio_id]">
                   {{ nombresProfesionales[r.servicio_id] }}
@@ -172,8 +243,18 @@ onMounted(async () => {
                   <span>{{ formatHora(r.hora_inicio) }} – {{ formatHora(r.hora_fin) }}</span>
                 </div>
               </div>
-              <svg class="arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+
+              <svg
+                class="arrow"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                  clip-rule="evenodd"
+                />
               </svg>
             </div>
           </div>
@@ -198,13 +279,16 @@ onMounted(async () => {
               {{ p.clientes?.[0]?.pivot?.sesiones_disponibles ?? 0 }} de {{ p.cantidad_sesiones }} sesiones disponibles
             </p>
             <div class="card-paquete-footer">
-              <span v-if="p.clientes?.[0]?.pivot?.fecha_compra">Comprado el {{ formatFecha(p.clientes[0].pivot.fecha_compra) }}</span>
-              <span v-if="p.clientes?.[0]?.pivot?.fecha_vencimiento">Vence el {{ formatFecha(p.clientes[0].pivot.fecha_vencimiento) }}</span>
+              <span v-if="p.clientes?.[0]?.pivot?.fecha_compra">
+                Comprado el {{ formatFecha(p.clientes[0].pivot.fecha_compra) }}
+              </span>
+              <span v-if="p.clientes?.[0]?.pivot?.fecha_vencimiento">
+                Vence el {{ formatFecha(p.clientes[0].pivot.fecha_vencimiento) }}
+              </span>
             </div>
           </div>
         </div>
       </template>
-
     </div>
   </div>
 </template>
@@ -285,7 +369,11 @@ onMounted(async () => {
   white-space: nowrap;
 }
 
-.filtro-chip:hover { border-color: #2563eb; color: #2563eb; }
+.filtro-chip:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
 .filtro-chip.activo {
   border-color: #2563eb;
   background: #eff9ff;
@@ -310,8 +398,13 @@ onMounted(async () => {
   background: white;
 }
 
-.item.clickable { cursor: pointer; }
-.item.clickable:hover { border-color: #2563eb; }
+.item.clickable {
+  cursor: pointer;
+}
+
+.item.clickable:hover {
+  border-color: #2563eb;
+}
 
 .content {
   flex: 1;
@@ -375,15 +468,103 @@ onMounted(async () => {
   width: fit-content;
 }
 
-.badge.amarillo { background: #fef9c3; color: #854d0e; }
-.badge.azul { background: #dbeafe; color: #1d4ed8; }
-.badge.verde-claro { background: #dcfce7; color: #166534; }
-.badge.verde { background: #bbf7d0; color: #15803d; }
-.badge.gris { background: #f3f4f6; color: #4b5563; }
-.badge.rojo { background: #fee2e2; color: #b91c1c; }
-.badge.naranja { background: #ffedd5; color: #9a3412; }
+.badge.amarillo {
+  background: #fef9c3;
+  color: #854d0e;
+}
 
-.lista-paquetes { display: flex; flex-direction: column; gap: 10px; }
+.badge.azul {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.badge.verde-claro {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.badge.verde {
+  background: #bbf7d0;
+  color: #15803d;
+}
+
+.badge.gris {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.badge.rojo {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.badge.naranja {
+  background: #ffedd5;
+  color: #9a3412;
+}
+
+.reprogramacion-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.55rem;
+  padding: 0.55rem 0.7rem;
+  border: 0.5px solid #facc15;
+  border-radius: 8px;
+  background: #fffbeb;
+}
+
+.reprogramacion-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.reprogramacion-titulo {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #92400e;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.reprogramacion-motivo {
+  font-size: 0.73rem;
+  color: #a16207;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-reprogramar {
+  border: 0.5px solid #f59e0b;
+  border-radius: 20px;
+  padding: 0.35rem 0.75rem;
+  background: white;
+  color: #b45309;
+  font-size: 0.73rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
+}
+
+.btn-reprogramar:hover {
+  background: #f59e0b;
+  color: white;
+  border-color: #f59e0b;
+}
+
+.lista-paquetes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
 .card-paquete {
   border: 0.5px solid #e9d5ff;
@@ -402,8 +583,29 @@ onMounted(async () => {
   align-items: center;
 }
 
-.card-paquete-header h4 { margin: 0; font-size: 0.9rem; font-weight: 600; color: #111827; }
-.card-paquete-desc { margin: 0; font-size: 0.8rem; color: #6b7280; }
-.card-paquete-sesiones { font-size: 0.8rem; color: #7c3aed; font-weight: 500; }
-.card-paquete-footer { font-size: 0.73rem; color: #9ca3af; display: flex; gap: 1rem; }
+.card-paquete-header h4 {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.card-paquete-desc {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.card-paquete-sesiones {
+  font-size: 0.8rem;
+  color: #7c3aed;
+  font-weight: 500;
+}
+
+.card-paquete-footer {
+  font-size: 0.73rem;
+  color: #9ca3af;
+  display: flex;
+  gap: 1rem;
+}
 </style>
