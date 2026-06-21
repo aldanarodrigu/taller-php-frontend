@@ -28,6 +28,13 @@ jobs:
         run: npm ci
 
       - name: Build
+        env:
+          VITE_APP_URL: ${{ secrets.VITE_APP_URL }}
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_REVERB_KEY: ${{ secrets.VITE_REVERB_KEY }}
+          VITE_REVERB_HOST: ${{ secrets.VITE_REVERB_HOST }}
+          VITE_REVERB_PORT: ${{ secrets.VITE_REVERB_PORT }}
+          VITE_REVERB_SCHEME: ${{ secrets.VITE_REVERB_SCHEME }}
         run: npm run build
 
       - name: Upload build artifact

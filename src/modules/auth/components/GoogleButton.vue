@@ -4,7 +4,8 @@ const props = withDefaults(defineProps<{ label?: string }>(), {
 });
 
 const handleGoogle = () => {
-  window.location.href = "http://localhost:8000/auth/google/redirect";
+  const appUrl = import.meta.env.VITE_APP_URL ?? "http://localhost:8000";
+  window.location.href = `${appUrl}/auth/google/redirect`;
 };
 </script>
 
