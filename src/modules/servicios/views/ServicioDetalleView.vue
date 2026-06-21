@@ -7,6 +7,7 @@ import { reservasApi } from "@/modules/reservas/api/reservas";
 import { serviciosApi } from "@/modules/servicios/api/servicios";
 import { calificacionesApi } from "@/modules/calificaciones/api/calificaciones";
 import { paquetesApi } from "@/modules/paquetes/api/paquetes";
+import { agendaApi } from "@/modules/agenda/api/agenda";
 
 import { useAuthStore } from "@/modules/auth/stores/auth";
 
@@ -30,7 +31,6 @@ function calcularPromedio(lista: any[]) {
 const showModal = ref(false);
 const fecha = ref("");
 const horarioSeleccionado = ref("");
-const disponibilidades = ref<any[]>([]);
 const horarios = ref<string[]>([]);
 const diaSinDisponibilidad = ref(false);
 const cargando = ref(true);
@@ -40,62 +40,77 @@ const errorReserva = ref<string | null>(null);
 const paquetesDisponibles = ref<any[]>([]);
 const paqueteClienteIdSeleccionado = ref<number | null>(null);
 
-const DIAS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sabado"];
-
-function horaAMinutos(hora: string): number {
-  const [h, m] = hora.slice(0, 5).split(":").map(Number);
-  return h * 60 + m;
-}
-
-function minutosAHora(min: number): string {
-  const h = Math.floor(min / 60)
-    .toString()
-    .padStart(2, "0");
-  const m = (min % 60).toString().padStart(2, "0");
-  return `${h}:${m}`;
-}
-
-function generarHorarios(disp: any, duracion: number): string[] {
-  const inicio = horaAMinutos(disp.hora_inicio);
-  const fin = horaAMinutos(disp.hora_fin);
-  const buffer = disp.buffer ?? 0;
-  const pausaInicio = disp.hora_inicio_pausa ? horaAMinutos(disp.hora_inicio_pausa) : null;
-  const pausaFin = disp.hora_fin_pausa ? horaAMinutos(disp.hora_fin_pausa) : null;
-
-  const resultado: string[] = [];
-  let actual = inicio;
-
-  while (actual + duracion <= fin) {
-    const finBloque = actual + duracion;
-
-    if (pausaInicio !== null && pausaFin !== null && actual < pausaFin && finBloque > pausaInicio) {
-      actual = pausaFin;
-      continue;
-    }
-
-    resultado.push(minutosAHora(actual));
-    actual = finBloque + buffer;
-  }
-
-  return resultado;
-}
-
-watch(fecha, (nuevaFecha) => {
+async function cargarHorariosDisponibles(
+  fechaSeleccionada: string,
+  limpiarError = true
+) {
   horarioSeleccionado.value = "";
   horarios.value = [];
   diaSinDisponibilidad.value = false;
 
-  if (!nuevaFecha) return;
+  if (limpiarError) {
+    errorReserva.value = null;
+  }
 
-  const dia = DIAS[new Date(nuevaFecha + "T00:00:00").getDay()];
-  const disp = disponibilidades.value.find((d) => d.dia_semana === dia);
+  const profesionalId = Number(
+    store.servicio?.profesional_id
+  );
 
-  if (!disp) {
+  const servicioId = Number(
+    store.servicio?.id ?? route.params.id
+  );
+
+  if (
+    !fechaSeleccionada ||
+    !profesionalId ||
+    !servicioId
+  ) {
     diaSinDisponibilidad.value = true;
     return;
   }
 
-  horarios.value = generarHorarios(disp, store.servicio?.duracion_minutos ?? 60);
+  cargandoDisponibilidad.value = true;
+
+  try {
+    const res = await agendaApi.obtenerHorarios(
+      profesionalId,
+      fechaSeleccionada,
+      servicioId
+    );
+
+    horarios.value =
+      res.data?.horarios_disponibles ?? [];
+
+    diaSinDisponibilidad.value =
+      horarios.value.length === 0;
+  } catch (error: any) {
+    horarios.value = [];
+    diaSinDisponibilidad.value = true;
+
+    errorReserva.value =
+      error?.response?.data?.error ??
+      "No se pudieron cargar los horarios disponibles.";
+  } finally {
+    cargandoDisponibilidad.value = false;
+  }
+}
+
+watch(fecha, async (nuevaFecha) => {
+  if (!nuevaFecha) {
+    horarioSeleccionado.value = "";
+    horarios.value = [];
+    diaSinDisponibilidad.value = false;
+    return;
+  }
+  
+  if (fecha.value) {
+    await cargarHorariosDisponibles(
+      fecha.value,
+      false
+    );
+  }
+
+  await cargarHorariosDisponibles(nuevaFecha);
 });
 
 function formatHora(hora: string) {
@@ -129,38 +144,13 @@ function volver() {
   router.push({ name: "Servicios" });
 }
 
-async function abrirModal() {
+function abrirModal() {
   fecha.value = "";
   horarioSeleccionado.value = "";
   horarios.value = [];
   diaSinDisponibilidad.value = false;
   errorReserva.value = null;
-  paqueteClienteIdSeleccionado.value = null;
-  paquetesDisponibles.value = [];
   showModal.value = true;
-
-  const servicioId = Number(route.params.id);
-
-  if (store.servicio?.profesional_id) {
-    cargandoDisponibilidad.value = true;
-    try {
-      const res = await serviciosApi.disponibilidad(store.servicio.profesional_id);
-      disponibilidades.value = res.data ?? [];
-    } catch {
-      disponibilidades.value = [];
-    } finally {
-      cargandoDisponibilidad.value = false;
-    }
-  }
-
-  if (authStore.user?.role === "cliente") {
-    try {
-      const res = await paquetesApi.paraServicio(servicioId);
-      paquetesDisponibles.value = res.data ?? [];
-    } catch {
-      paquetesDisponibles.value = [];
-    }
-  }
 }
 
 async function confirmarReserva() {
@@ -183,7 +173,17 @@ async function confirmarReserva() {
     showModal.value = false;
     router.push({ name: "Compras" });
   } catch (e: any) {
-    errorReserva.value = e?.response?.data?.error ?? "Error al crear la reserva.";
+    const mensaje =
+      e?.response?.data?.error ??
+      e?.response?.data?.message ??
+      "Error al crear la reserva.";
+
+    errorReserva.value = mensaje;
+    horarioSeleccionado.value = "";
+
+    if (fecha.value) {
+      await cargarHorariosDisponibles(fecha.value, false);
+    }
   } finally {
     creandoReserva.value = false;
   }

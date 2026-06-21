@@ -6,6 +6,7 @@ import { useAuthStore } from "@/modules/auth/stores/auth";
 import { serviciosApi } from "@/modules/servicios/api/servicios";
 import { pagosApi } from "@/modules/pagos/api/pagos";
 import { calificacionesApi } from "@/modules/calificaciones/api/calificaciones";
+import { agendaApi } from "@/modules/agenda/api/agenda";
 
 const route = useRoute();
 const router = useRouter();
@@ -17,10 +18,9 @@ const nuevaFecha = ref("");
 const nuevaHora = ref("");
 const reprogramacionError = ref("");
 
-const disponibilidadesReprogramacion = ref<any[]>([]);
 const horariosReprogramacion = ref<string[]>([]);
 const diaSinDisponibilidadReprogramacion = ref(false);
-const cargandoDisponibilidadReprogramacion = ref(false);
+const cargandoHorariosReprogramacion = ref(false);
 
 const servicio = ref<any | null>(null);
 
@@ -171,23 +171,6 @@ function formatHora(hora: string) {
   return hora?.slice(0, 5);
 }
 
-const DIAS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sabado"];
-
-function horaAMinutos(hora: string): number {
-  const [h, m] = hora.slice(0, 5).split(":").map(Number);
-  return h * 60 + m;
-}
-
-function minutosAHora(min: number): string {
-  const h = Math.floor(min / 60)
-    .toString()
-    .padStart(2, "0");
-
-  const m = (min % 60).toString().padStart(2, "0");
-
-  return `${h}:${m}`;
-}
-
 const textoVolver = computed(() =>
   rol.value === "cliente" ? "Volver a mis compras" : "Volver a mis reservas"
 );
@@ -198,120 +181,91 @@ function volver() {
   });
 }
 
-function generarHorarios(disp: any, duracion: number): string[] {
-  const inicio = horaAMinutos(disp.hora_inicio);
-  const fin = horaAMinutos(disp.hora_fin);
-  const buffer = disp.buffer ?? 0;
-
-  const pausaInicio = disp.hora_inicio_pausa
-    ? horaAMinutos(disp.hora_inicio_pausa)
-    : null;
-
-  const pausaFin = disp.hora_fin_pausa
-    ? horaAMinutos(disp.hora_fin_pausa)
-    : null;
-
-  const resultado: string[] = [];
-  let actual = inicio;
-
-  while (actual + duracion <= fin) {
-    const finBloque = actual + duracion;
-
-    if (
-      pausaInicio !== null &&
-      pausaFin !== null &&
-      actual < pausaFin &&
-      finBloque > pausaInicio
-    ) {
-      actual = pausaFin;
-      continue;
-    }
-
-    resultado.push(minutosAHora(actual));
-    actual = finBloque + buffer;
-  }
-
-  return resultado;
-}
-
-watch(nuevaFecha, (fechaSeleccionada) => {
+async function cargarHorariosReprogramacion(
+  fechaSeleccionada: string,
+  limpiarError = true
+) {
   nuevaHora.value = "";
   horariosReprogramacion.value = [];
   diaSinDisponibilidadReprogramacion.value = false;
-  reprogramacionError.value = "";
 
-  if (!fechaSeleccionada || !servicio.value) return;
+  if (limpiarError) {
+    reprogramacionError.value = "";
+  }
 
-  const dia = DIAS[new Date(fechaSeleccionada + "T00:00:00").getDay()];
-
-  const disp = disponibilidadesReprogramacion.value.find(
-    (d) => d.dia_semana === dia
+  const profesionalId = Number(
+    servicio.value?.profesional_id ??
+    servicio.value?.profesional?.id
   );
 
-  if (!disp) {
+  const servicioId = Number(servicio.value?.id);
+
+  if (!fechaSeleccionada || !profesionalId || !servicioId) {
     diaSinDisponibilidadReprogramacion.value = true;
     return;
   }
 
-  horariosReprogramacion.value = generarHorarios(
-    disp,
-    servicio.value?.duracion_minutos ?? 60
-  );
+  cargandoHorariosReprogramacion.value = true;
+
+  try {
+    const res = await agendaApi.obtenerHorarios(
+      profesionalId,
+      fechaSeleccionada,
+      servicioId
+    );
+
+    horariosReprogramacion.value =
+      res.data?.horarios_disponibles ?? [];
+
+    diaSinDisponibilidadReprogramacion.value =
+      horariosReprogramacion.value.length === 0;
+  } catch (e: any) {
+    horariosReprogramacion.value = [];
+    diaSinDisponibilidadReprogramacion.value = true;
+
+    reprogramacionError.value =
+      e?.response?.data?.error ??
+      e?.response?.data?.message ??
+      "No se pudieron cargar los horarios disponibles.";
+  } finally {
+    cargandoHorariosReprogramacion.value = false;
+  }
+}
+
+watch(nuevaFecha, async (fechaSeleccionada) => {
+  if (!fechaSeleccionada) {
+    nuevaHora.value = "";
+    horariosReprogramacion.value = [];
+    diaSinDisponibilidadReprogramacion.value = false;
+    return;
+  }
+
+  await cargarHorariosReprogramacion(fechaSeleccionada);
 });
 
 async function abrirFormReprogramar() {
   if (!puedeReprogramar.value) return;
   if (!store.reserva || !servicio.value) return;
 
-  nuevaFecha.value = store.reserva.fecha;
+  mostrarFormReprogramar.value = true;
   nuevaHora.value = "";
   horariosReprogramacion.value = [];
   diaSinDisponibilidadReprogramacion.value = false;
   reprogramacionError.value = "";
-  mostrarFormReprogramar.value = true;
 
-  const profesionalId =
-    servicio.value.profesional_id ?? servicio.value.profesional?.id;
-
-  if (!profesionalId) {
-    reprogramacionError.value = "No se pudo obtener el profesional del servicio.";
-    return;
-  }
-
-  cargandoDisponibilidadReprogramacion.value = true;
-
-  try {
-    const res = await serviciosApi.disponibilidad(profesionalId);
-    disponibilidadesReprogramacion.value = res.data ?? [];
-
-    const dia = DIAS[new Date(nuevaFecha.value + "T00:00:00").getDay()];
-    const disp = disponibilidadesReprogramacion.value.find(
-      (d) => d.dia_semana === dia
-    );
-
-    if (!disp) {
-      diaSinDisponibilidadReprogramacion.value = true;
-      horariosReprogramacion.value = [];
-      return;
-    }
-
-    horariosReprogramacion.value = generarHorarios(
-      disp,
-      servicio.value?.duracion_minutos ?? 60
-    );
-  } catch {
-    disponibilidadesReprogramacion.value = [];
-    horariosReprogramacion.value = [];
-    reprogramacionError.value = "No se pudieron cargar los horarios disponibles.";
-  } finally {
-    cargandoDisponibilidadReprogramacion.value = false;
-  }
+  // Forzamos un cambio real para que el watch vuelva a consultar
+  // aunque el formulario se abra más de una vez sobre la misma fecha.
+  nuevaFecha.value = "";
+  nuevaFecha.value = store.reserva.fecha;
 }
 
 function cerrarFormReprogramar() {
   mostrarFormReprogramar.value = false;
   reprogramacionError.value = "";
+  nuevaFecha.value = "";
   nuevaHora.value = "";
+  horariosReprogramacion.value = [];
+  diaSinDisponibilidadReprogramacion.value = false;
 }
 
 async function confirmarReprogramacion() {
@@ -339,6 +293,15 @@ async function confirmarReprogramacion() {
   } else {
     reprogramacionError.value =
       store.accionError ?? "No se pudo reprogramar la reserva.";
+
+    nuevaHora.value = "";
+
+    if (nuevaFecha.value) {
+      await cargarHorariosReprogramacion(
+        nuevaFecha.value,
+        false
+      );
+    }
   }
 }
 
@@ -464,7 +427,7 @@ onMounted(async () => {
 
           <div v-if="nuevaFecha" class="horarios-section">
             <p
-              v-if="cargandoDisponibilidadReprogramacion"
+              v-if="cargandoHorariosReprogramacion"
               class="horarios-estado"
             >
               Cargando horarios...
