@@ -13,6 +13,7 @@ export const useReservasStore = defineStore("reservas", () => {
   async function listar() {
     cargando.value = true;
     error.value = null;
+
     try {
       const res = await reservasApi.listar();
       reservas.value = res.data ?? [];
@@ -26,6 +27,7 @@ export const useReservasStore = defineStore("reservas", () => {
   async function obtener(id: number) {
     cargando.value = true;
     error.value = null;
+
     try {
       const res = await reservasApi.obtener(id);
       reserva.value = res.data;
@@ -39,26 +41,68 @@ export const useReservasStore = defineStore("reservas", () => {
   async function ejecutarAccion(accion: () => Promise<any>) {
     accionCargando.value = true;
     accionError.value = null;
+
     try {
       const res = await accion();
-      reserva.value = res.data;
-      const idx = reservas.value.findIndex((r) => r.id === res.data.id);
-      if (idx !== -1) reservas.value[idx] = res.data;
+
+      const reservaActualizada = res.data?.reserva ?? res.data;
+
+      reserva.value = reservaActualizada;
+
+      const idx = reservas.value.findIndex(
+        (r) => r.id === reservaActualizada.id
+      );
+
+      if (idx !== -1) {
+        reservas.value[idx] = reservaActualizada;
+      }
+
+      return true;
     } catch (e: any) {
-      accionError.value = e?.response?.data?.error ?? "Error al ejecutar la acción";
+      accionError.value =
+        e?.response?.data?.error ?? "Error al ejecutar la acción";
+
+      return false;
     } finally {
       accionCargando.value = false;
     }
   }
 
-  const cancelar = (id: number) => ejecutarAccion(() => reservasApi.cancelar(id));
-  const confirmar = (id: number) => ejecutarAccion(() => reservasApi.confirmar(id));
-  const iniciar = (id: number) => ejecutarAccion(() => reservasApi.iniciar(id));
-  const finalizar = (id: number) => ejecutarAccion(() => reservasApi.finalizar(id));
-  const noAsistida = (id: number) => ejecutarAccion(() => reservasApi.noAsistida(id));
+  const cancelar = (id: number) =>
+    ejecutarAccion(() => reservasApi.cancelar(id));
+
+  const confirmar = (id: number) =>
+    ejecutarAccion(() => reservasApi.confirmar(id));
+
+  const iniciar = (id: number) =>
+    ejecutarAccion(() => reservasApi.iniciar(id));
+
+  const finalizar = (id: number) =>
+    ejecutarAccion(() => reservasApi.finalizar(id));
+
+  const noAsistida = (id: number) =>
+    ejecutarAccion(() => reservasApi.noAsistida(id));
+
+  const reprogramar = (
+    id: number,
+    data: { fecha: string; hora_inicio: string }
+  ) => ejecutarAccion(() => reservasApi.reprogramar(id, data));
 
   return {
-    reservas, reserva, cargando, error, accionCargando, accionError,
-    listar, obtener, cancelar, confirmar, iniciar, finalizar, noAsistida,
+    reservas,
+    reserva,
+    cargando,
+    error,
+    accionCargando,
+    accionError,
+
+    listar,
+    obtener,
+    cancelar,
+    confirmar,
+    iniciar,
+    finalizar,
+    noAsistida,
+    reprogramar,
   };
 });

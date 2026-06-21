@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, computed } from "vue";
+import { onMounted, ref, computed, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useReservasStore } from "@/modules/reservas/stores/reservas";
 import { useAuthStore } from "@/modules/auth/stores/auth";
@@ -11,6 +11,16 @@ const route = useRoute();
 const router = useRouter();
 const store = useReservasStore();
 const authStore = useAuthStore();
+
+const mostrarFormReprogramar = ref(false);
+const nuevaFecha = ref("");
+const nuevaHora = ref("");
+const reprogramacionError = ref("");
+
+const disponibilidadesReprogramacion = ref<any[]>([]);
+const horariosReprogramacion = ref<string[]>([]);
+const diaSinDisponibilidadReprogramacion = ref(false);
+const cargandoDisponibilidadReprogramacion = ref(false);
 
 const servicio = ref<any | null>(null);
 
@@ -69,6 +79,10 @@ const puedeVideollamada = computed(() => {
   if (estado.value === "en_curso") return esOnline.value;
   return esOnline.value;
 });
+
+const puedeReprogramar = computed(() =>
+  ["pendiente", "confirmada", "pagada"].includes(estado.value)
+);
 
 const mostrarFormPago = ref(false);
 const pagoCargando = ref(false);
@@ -156,6 +170,166 @@ function formatHora(hora: string) {
   return hora?.slice(0, 5);
 }
 
+const DIAS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sabado"];
+
+function horaAMinutos(hora: string): number {
+  const [h, m] = hora.slice(0, 5).split(":").map(Number);
+  return h * 60 + m;
+}
+
+function minutosAHora(min: number): string {
+  const h = Math.floor(min / 60)
+    .toString()
+    .padStart(2, "0");
+
+  const m = (min % 60).toString().padStart(2, "0");
+
+  return `${h}:${m}`;
+}
+
+function generarHorarios(disp: any, duracion: number): string[] {
+  const inicio = horaAMinutos(disp.hora_inicio);
+  const fin = horaAMinutos(disp.hora_fin);
+  const buffer = disp.buffer ?? 0;
+
+  const pausaInicio = disp.hora_inicio_pausa
+    ? horaAMinutos(disp.hora_inicio_pausa)
+    : null;
+
+  const pausaFin = disp.hora_fin_pausa
+    ? horaAMinutos(disp.hora_fin_pausa)
+    : null;
+
+  const resultado: string[] = [];
+  let actual = inicio;
+
+  while (actual + duracion <= fin) {
+    const finBloque = actual + duracion;
+
+    if (
+      pausaInicio !== null &&
+      pausaFin !== null &&
+      actual < pausaFin &&
+      finBloque > pausaInicio
+    ) {
+      actual = pausaFin;
+      continue;
+    }
+
+    resultado.push(minutosAHora(actual));
+    actual = finBloque + buffer;
+  }
+
+  return resultado;
+}
+
+watch(nuevaFecha, (fechaSeleccionada) => {
+  nuevaHora.value = "";
+  horariosReprogramacion.value = [];
+  diaSinDisponibilidadReprogramacion.value = false;
+  reprogramacionError.value = "";
+
+  if (!fechaSeleccionada || !servicio.value) return;
+
+  const dia = DIAS[new Date(fechaSeleccionada + "T00:00:00").getDay()];
+
+  const disp = disponibilidadesReprogramacion.value.find(
+    (d) => d.dia_semana === dia
+  );
+
+  if (!disp) {
+    diaSinDisponibilidadReprogramacion.value = true;
+    return;
+  }
+
+  horariosReprogramacion.value = generarHorarios(
+    disp,
+    servicio.value?.duracion_minutos ?? 60
+  );
+});
+
+async function abrirFormReprogramar() {
+  if (!store.reserva || !servicio.value) return;
+
+  nuevaFecha.value = store.reserva.fecha;
+  nuevaHora.value = "";
+  horariosReprogramacion.value = [];
+  diaSinDisponibilidadReprogramacion.value = false;
+  reprogramacionError.value = "";
+  mostrarFormReprogramar.value = true;
+
+  const profesionalId =
+    servicio.value.profesional_id ?? servicio.value.profesional?.id;
+
+  if (!profesionalId) {
+    reprogramacionError.value = "No se pudo obtener el profesional del servicio.";
+    return;
+  }
+
+  cargandoDisponibilidadReprogramacion.value = true;
+
+  try {
+    const res = await serviciosApi.disponibilidad(profesionalId);
+    disponibilidadesReprogramacion.value = res.data ?? [];
+
+    const dia = DIAS[new Date(nuevaFecha.value + "T00:00:00").getDay()];
+    const disp = disponibilidadesReprogramacion.value.find(
+      (d) => d.dia_semana === dia
+    );
+
+    if (!disp) {
+      diaSinDisponibilidadReprogramacion.value = true;
+      horariosReprogramacion.value = [];
+      return;
+    }
+
+    horariosReprogramacion.value = generarHorarios(
+      disp,
+      servicio.value?.duracion_minutos ?? 60
+    );
+  } catch {
+    disponibilidadesReprogramacion.value = [];
+    horariosReprogramacion.value = [];
+    reprogramacionError.value = "No se pudieron cargar los horarios disponibles.";
+  } finally {
+    cargandoDisponibilidadReprogramacion.value = false;
+  }
+}
+
+function cerrarFormReprogramar() {
+  mostrarFormReprogramar.value = false;
+  reprogramacionError.value = "";
+  nuevaHora.value = "";
+}
+
+async function confirmarReprogramacion() {
+  if (!store.reserva) return;
+
+  if (!nuevaFecha.value || !nuevaHora.value) {
+    reprogramacionError.value = "Seleccioná una fecha y un horario disponible.";
+    return;
+  }
+
+  reprogramacionError.value = "";
+
+  const ok = await store.reprogramar(store.reserva.id, {
+    fecha: nuevaFecha.value,
+    hora_inicio: nuevaHora.value,
+  });
+
+  if (ok) {
+    mostrarFormReprogramar.value = false;
+
+    router.replace({
+      name: "ReservaDetalle",
+      params: { id: store.reserva.id },
+    });
+  } else {
+    reprogramacionError.value =
+      store.accionError ?? "No se pudo reprogramar la reserva.";
+  }
+}
+
 onMounted(async () => {
   await store.obtener(Number(route.params.id));
   if (store.reserva?.servicio_id) {
@@ -165,6 +339,9 @@ onMounted(async () => {
     } catch (e) {
       console.warn("No se pudo cargar el servicio:", e);
     }
+  }
+  if (route.query.reprogramar === "1" && puedeReprogramar.value) {
+    await abrirFormReprogramar();
   }
 });
 </script>
@@ -229,6 +406,106 @@ onMounted(async () => {
 
         <div v-if="store.accionError" class="error-msg">
           {{ store.accionError }}
+        </div>
+        
+        <div
+            v-if="store.reserva.requiere_reprogramacion"
+            class="reprogramacion-aviso"
+          >
+            <div>
+              <strong>Esta reserva requiere reprogramación</strong>
+              <p>
+                Fue afectada por un cambio de disponibilidad del profesional.
+              </p>
+              <p v-if="store.reserva.motivo_reprogramacion">
+                Motivo: {{ store.reserva.motivo_reprogramacion }}
+              </p>
+            </div>
+
+            <button
+              v-if="puedeReprogramar"
+              class="btn-reprogramar-inline"
+              @click="abrirFormReprogramar"
+            >
+              Reprogramar
+            </button>
+          </div>
+        
+        <div v-if="mostrarFormReprogramar" class="reprogramacion-form">
+          <div class="form-header mini">
+            <div>
+              <h3>Reprogramar reserva</h3>
+              <p>Elegí una nueva fecha y horario disponible.</p>
+            </div>
+          </div>
+
+          <div class="reprogramacion-grid">
+            <label>
+              <span>Fecha</span>
+              <input
+                v-model="nuevaFecha"
+                type="date"
+                :min="new Date().toISOString().slice(0, 10)"
+              />
+            </label>
+          </div>
+
+          <div v-if="nuevaFecha" class="horarios-section">
+            <p
+              v-if="cargandoDisponibilidadReprogramacion"
+              class="horarios-estado"
+            >
+              Cargando horarios...
+            </p>
+
+            <template v-else-if="diaSinDisponibilidadReprogramacion">
+              <p class="sin-disponibilidad">
+                El profesional no tiene disponibilidad para este día.
+              </p>
+            </template>
+
+            <template v-else-if="horariosReprogramacion.length > 0">
+              <p class="horarios-label">Horarios disponibles</p>
+
+              <div class="horarios-grid">
+                <button
+                  v-for="horario in horariosReprogramacion"
+                  :key="horario"
+                  class="horario"
+                  :class="{ activo: horario === nuevaHora }"
+                  @click="nuevaHora = horario"
+                >
+                  {{ horario }}
+                </button>
+              </div>
+            </template>
+
+            <p v-else class="horarios-estado">
+              No hay horarios disponibles para este día.
+            </p>
+          </div>
+
+          <div v-if="reprogramacionError || store.accionError" class="error-msg">
+            {{ reprogramacionError || store.accionError }}
+          </div>
+
+          <div class="reprogramacion-acciones">
+            <button
+              class="btn-link"
+              :disabled="store.accionCargando"
+              @click="cerrarFormReprogramar"
+            >
+              Cancelar
+            </button>
+
+            <button
+              class="btn-save"
+              :disabled="store.accionCargando || !nuevaFecha || !nuevaHora"
+              @click="confirmarReprogramacion"
+            >
+              {{ store.accionCargando ? "Reprogramando..." : "Confirmar reprogramación" }}
+            </button>
+          </div>
         </div>
 
         <!-- Acciones -->
@@ -867,8 +1144,185 @@ onMounted(async () => {
   color: #2563eb;
 }
 
+.reprogramacion-aviso {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.85rem 1rem;
+  border: 0.5px solid #facc15;
+  border-radius: 8px;
+  background: #fffbeb;
+}
+
+.reprogramacion-aviso strong {
+  display: block;
+  font-size: 0.82rem;
+  color: #92400e;
+  margin-bottom: 0.2rem;
+}
+
+.reprogramacion-aviso p {
+  margin: 0;
+  font-size: 0.76rem;
+  color: #a16207;
+  line-height: 1.4;
+}
+
+.btn-reprogramar-inline {
+  border: 0.5px solid #f59e0b;
+  border-radius: 20px;
+  padding: 0.4rem 0.85rem;
+  background: white;
+  color: #b45309;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-reprogramar-inline:hover {
+  background: #f59e0b;
+  color: white;
+}
+
+.reprogramacion-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border: 0.5px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem;
+  background: #f9fafb;
+}
+
+.form-header.mini {
+  margin: 0;
+  padding-bottom: 0.75rem;
+}
+
+.form-header.mini h3 {
+  font-size: 0.9rem;
+}
+
+.reprogramacion-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.reprogramacion-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.reprogramacion-grid span {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.reprogramacion-grid input {
+  border: 0.5px solid #d1d5db;
+  border-radius: 8px;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.875rem;
+  color: #111827;
+  background: white;
+  font-family: inherit;
+}
+
+.reprogramacion-grid input:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+.reprogramacion-acciones {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.reprogramacion-acciones .btn-link,
+.reprogramacion-acciones .btn-save {
+  flex: 1;
+}
+
+
+/* ── Horarios disponibles para reprogramar ── */
+.horarios-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.horarios-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #374151;
+  margin: 0;
+}
+
+.horarios-estado {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin: 0;
+}
+
+.sin-disponibilidad {
+  font-size: 0.8rem;
+  color: #9a3412;
+  background: #ffedd5;
+  border-radius: 8px;
+  padding: 0.6rem 0.875rem;
+  margin: 0;
+}
+
+.horarios-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.horario {
+  padding: 0.3rem 0.85rem;
+  border: 0.5px solid #d1d5db;
+  border-radius: 20px;
+  background: white;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    color 0.15s;
+}
+
+.horario:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.horario.activo {
+  border-color: #2563eb;
+  background: #eff9ff;
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
+    .reprogramacion-grid {
+    grid-template-columns: 1fr;
+    }
+
+  .reprogramacion-aviso {
+    flex-direction: column;
+    align-items: stretch;
+  }
   .layout {
     grid-template-columns: 1fr;
   }
