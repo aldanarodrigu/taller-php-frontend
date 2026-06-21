@@ -111,7 +111,7 @@ const formatDate = (date: string) => {
               Ver
             </button>
 
-            <button v-if="u.role !== 'admin'" class="btn danger">Desactivar</button>
+            <!-- <button v-if="u.role !== 'admin'" class="btn danger">Desactivar</button> -->>
           </div>
         </div>
 
