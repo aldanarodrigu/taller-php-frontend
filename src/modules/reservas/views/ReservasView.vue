@@ -49,6 +49,14 @@ function formatHora(hora: string) {
   return hora?.slice(0, 5);
 }
 
+function irAReprogramar(id: number) {
+  router.push({
+    name: "ReservaDetalle",
+    params: { id },
+    query: { reprogramar: "1" },
+  });
+}
+
 async function cargarNombreServicio(servicioId: number) {
   if (nombresServicios.value[servicioId]) return;
   try {
@@ -119,6 +127,24 @@ onMounted(async () => {
               <span class="badge" :class="ESTADOS_COLOR[r.estado]">
                 {{ ESTADOS_LABEL[r.estado] ?? r.estado }}
               </span>
+                <div v-if="r.requiere_reprogramacion" class="reprogramacion-alerta">
+                <div>
+                  <strong>Reserva afectada</strong>
+                  <p>
+                    Esta reserva fue afectada por un cambio de disponibilidad del profesional.
+                  </p>
+                  <p v-if="r.motivo_reprogramacion">
+                    Motivo: {{ r.motivo_reprogramacion }}
+                  </p>
+                </div>
+
+                <button
+                  class="btn-reprogramar"
+                  @click.stop="irAReprogramar(r.id)"
+                >
+                  Reprogramar
+                </button>
+              </div>
               <h4>{{ nombresServicios[r.servicio_id] ?? "..." }}</h4>
               <p v-if="nombresProfesionales[r.servicio_id]">
                 {{ nombresProfesionales[r.servicio_id] }}
@@ -368,5 +394,46 @@ onMounted(async () => {
 .badge.naranja {
   background: #ffedd5;
   color: #9a3412;
+}
+
+.reprogramacion-alerta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 0.5px solid #f59e0b;
+  border-radius: 8px;
+  background: #fffbeb;
+  margin: 0.35rem 0;
+}
+
+.reprogramacion-alerta strong {
+  display: block;
+  font-size: 0.78rem;
+  color: #92400e;
+  margin-bottom: 0.15rem;
+}
+
+.reprogramacion-alerta p {
+  margin: 0;
+  font-size: 0.74rem;
+  color: #92400e;
+}
+
+.btn-reprogramar {
+  border: none;
+  border-radius: 6px;
+  padding: 0.45rem 0.75rem;
+  background: #f59e0b;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-reprogramar:hover {
+  background: #d97706;
 }
 </style>

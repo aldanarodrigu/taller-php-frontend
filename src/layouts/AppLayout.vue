@@ -10,10 +10,10 @@ const notificationStore = useNotificationStore();
 onMounted(async () => {
   const token = localStorage.getItem("token");
   if (token && !authStore.loaded) {
-    await authStore.fetchUser(); // user debe estar cargado antes de iniciarTiempoReal
+    await authStore.fetchUser();
   }
   await notificationStore.fetchNotifications();
-  notificationStore.iniciarTiempoReal(); // ahora sí authStore.user?.profesional?.id existe
+  notificationStore.iniciarTiempoReal();
 });
 </script>
 
@@ -43,11 +43,6 @@ onMounted(async () => {
   min-width: 0;
 }
 
-/* ── Responsive ──
-   El sidebar pasa a ser un drawer fuera de pantalla
-   (ver Sidebar.vue), así que el contenido principal
-   deja de necesitar el margen de 240px y le damos
-   espacio arriba para el botón hamburguesa. */
 @media (max-width: 768px) {
   .main-content {
     margin-left: 0;

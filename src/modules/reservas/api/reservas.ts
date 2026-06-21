@@ -10,4 +10,10 @@ export const reservasApi = {
   iniciar: (id: number) => http.patch(`/reservas/${id}/iniciar`),
   finalizar: (id: number) => http.patch(`/reservas/${id}/finalizar`),
   noAsistida: (id: number) => http.patch(`/reservas/${id}/no-asistida`),
+  reprogramar: (
+  id: number,
+  data: { fecha: string; hora_inicio: string }
+) => http.patch(`/reservas/${id}/reprogramar`, data),
 };
+
+
