@@ -50,7 +50,9 @@ const estado = computed(() => store.reserva?.estado ?? "");
 const puedeConfirmar = computed(() => estado.value === "pendiente" && rol.value === "profesional");
 
 const puedeCancelar = computed(
-  () => ["pendiente", "confirmada"].includes(estado.value) && rol.value === "cliente",
+  () =>
+    ["pendiente", "confirmada"].includes(estado.value) &&
+    (rol.value === "cliente" || rol.value === "profesional"),
 );
 
 const puedePagar = computed(() => estado.value === "confirmada" && rol.value === "cliente");
