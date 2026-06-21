@@ -81,6 +81,7 @@ const puedeVideollamada = computed(() => {
 });
 
 const puedeReprogramar = computed(() =>
+  rol.value === "cliente" &&
   ["pendiente", "confirmada", "pagada"].includes(estado.value)
 );
 
@@ -187,6 +188,16 @@ function minutosAHora(min: number): string {
   return `${h}:${m}`;
 }
 
+const textoVolver = computed(() =>
+  rol.value === "cliente" ? "Volver a mis compras" : "Volver a mis reservas"
+);
+
+function volver() {
+  router.push({
+    name: rol.value === "cliente" ? "Compras" : "Reservas",
+  });
+}
+
 function generarHorarios(disp: any, duracion: number): string[] {
   const inicio = horaAMinutos(disp.hora_inicio);
   const fin = horaAMinutos(disp.hora_fin);
@@ -249,6 +260,7 @@ watch(nuevaFecha, (fechaSeleccionada) => {
 });
 
 async function abrirFormReprogramar() {
+  if (!puedeReprogramar.value) return;
   if (!store.reserva || !servicio.value) return;
 
   nuevaFecha.value = store.reserva.fecha;
@@ -348,7 +360,7 @@ onMounted(async () => {
 
 <template>
   <div class="form-wrap">
-    <button class="btn-volver" @click="router.push({ name: 'Reservas' })">
+    <button class="btn-volver" @click="volver">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
         <path
           fill-rule="evenodd"
@@ -356,7 +368,7 @@ onMounted(async () => {
           clip-rule="evenodd"
         />
       </svg>
-      Volver a mis reservas
+      {{ textoVolver }}
     </button>
 
     <p v-if="store.cargando" class="empty-text">Cargando...</p>
@@ -409,7 +421,7 @@ onMounted(async () => {
         </div>
         
         <div
-            v-if="store.reserva.requiere_reprogramacion"
+            v-if="store.reserva.requiere_reprogramacion && rol === 'cliente'"
             class="reprogramacion-aviso"
           >
             <div>
@@ -431,7 +443,7 @@ onMounted(async () => {
             </button>
           </div>
         
-        <div v-if="mostrarFormReprogramar" class="reprogramacion-form">
+        <div v-if="mostrarFormReprogramar && puedeReprogramar" class="reprogramacion-form">
           <div class="form-header mini">
             <div>
               <h3>Reprogramar reserva</h3>
