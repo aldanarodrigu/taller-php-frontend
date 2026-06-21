@@ -46,3 +46,18 @@ npm run build
 ```sh
 npm run lint
 ```
+
+## CI/CD
+
+Este repositorio usa GitHub Actions con dos workflows:
+
+- `CI`: corre en `push` y `pull_request`, instala dependencias, ejecuta lint y build.
+- `Deploy to S3/CloudFront`: corre en `push` a `main` o manualmente (`workflow_dispatch`), genera el build y publica `dist/` en S3.
+
+Para deploy define estos secretos en GitHub:
+
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AWS_REGION`
+- `S3_BUCKET`
+- `CLOUDFRONT_ID`
