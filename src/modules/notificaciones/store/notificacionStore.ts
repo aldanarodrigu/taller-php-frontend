@@ -6,7 +6,7 @@ import { useAuthStore } from "@/modules/auth/stores/auth";
 
 import { getNotifications, markAsRead, markAllAsRead } from "../api/notificacionesApi";
 
-import type { Notification } from "@/types/Notification";
+import type { Notification } from "@/types/notification";
 
 export const useNotificationStore = defineStore("notifications", () => {
   const notifications = ref<Notification[]>([]);
