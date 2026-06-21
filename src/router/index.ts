@@ -106,6 +106,7 @@ const router = createRouter({
           path: "mis-servicios",
           component: () => import("@/modules/servicios/views/MisServiciosView.vue"),
           name: "MisServicios",
+          meta: { role: "profesional" },
         },
         {
           path: "paquetes",
@@ -141,6 +142,7 @@ const router = createRouter({
           path: "clientes",
           name: "Clientes",
           component: () => import("@/modules/reservas/views/ClientesView.vue"),
+          meta: { role: "profesional" },
         },
         {
           path: "disponibilidad",
@@ -189,6 +191,10 @@ router.beforeEach(async (to) => {
   }
 
   if (to.path.startsWith("/admin") && user?.role !== "admin") {
+    return "/app/home";
+  }
+
+  if (to.meta.role && user?.role !== to.meta.role) {
     return "/app/home";
   }
 
