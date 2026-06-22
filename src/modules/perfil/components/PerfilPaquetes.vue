@@ -2,7 +2,7 @@
 import { ref, onMounted, watch } from "vue";
 import { http } from "@/modules/auth/api/http";
 
-const irADetalle = (_id: number) => {};
+const irADetalle = () => {};
 
 const props = defineProps<{
   profesionalId?: number | null;
