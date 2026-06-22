@@ -82,8 +82,8 @@ async function eliminar(id: number) {
   try {
     await http.delete(`/services/${id}`);
     await cargar();
-  } catch {
-    error.value = "Error al eliminar el servicio";
+  } catch (e: any) {
+    error.value = e.response?.data?.error ?? "Error al eliminar el servicio";
   }
 }
 
@@ -321,6 +321,10 @@ onMounted(async () => {
       <div v-if="mostrarFormulario" class="formulario">
         <h4 class="form-subtitle">Nuevo servicio</h4>
 
+        <div v-if="disponibilidades.length === 0" class="error-msg" style="background:#fff3cd;color:#856404;border-color:#ffc107;">
+          ⚠️ No tenés disponibilidad horaria configurada. El servicio no podrá recibir reservas hasta que agregues al menos un horario en la sección <strong>Disponibilidad</strong>.
+        </div>
+
         <div v-if="errorForm" class="error-msg">{{ errorForm }}</div>
 
         <div class="field">
@@ -335,11 +339,16 @@ onMounted(async () => {
 
         <div class="field">
           <label>Tipo *</label>
-          <input
-            class="input"
-            v-model="form.tipo"
-            placeholder="Ej: consultoria, entrenamiento, terapia"
-          />
+          <select class="input" v-model="form.tipo">
+            <option value="" disabled>Seleccioná un tipo</option>
+            <option value="consulta">Consulta</option>
+            <option value="terapia">Terapia</option>
+            <option value="entrenamiento">Entrenamiento</option>
+            <option value="coaching">Coaching</option>
+            <option value="clase">Clase</option>
+            <option value="asesoramiento">Asesoramiento</option>
+            <option value="otro">Otro</option>
+          </select>
         </div>
 
         <div class="field">
