@@ -55,16 +55,32 @@ export const useNotificationStore = defineStore("notifications", () => {
 
   const iniciarTiempoReal = () => {
     const authStore = useAuthStore();
+    const userId = authStore.user?.id;
     const profesionalId = authStore.user?.profesional?.id;
 
-    if (!profesionalId) {
-      console.warn("iniciarTiempoReal: sin profesionalId, abortando");
+    if (!userId) {
+      console.warn("iniciarTiempoReal: sin userId, abortando");
       return;
     }
 
-    echo.private(`profesional.${profesionalId}`).listen("ReservationCreated", async () => {
-      await fetchNotifications(); // awaitar para asegurar que el store se actualiza antes de que Vue re-renderice
+    // Escuchar notificaciones Laravel broadcast (NuevaReserva, Confirmada, Cancelada, etc.)
+    echo.private(`usuario.${userId}`).notification(async () => {
+      await fetchNotifications();
     });
+
+    // Escuchar evento ReservationCreated en el canal del usuario (clientes)
+    echo.private(`usuario.${userId}`).listen("ReservationCreated", async () => {
+      await fetchNotifications();
+    });
+
+    // Si es profesional, también escuchar en el canal profesional
+    if (profesionalId) {
+      echo
+        .private(`profesional.${profesionalId}`)
+        .listen("ReservationCreated", async () => {
+          await fetchNotifications();
+        });
+    }
   };
   return {
     notifications,
