@@ -8,6 +8,7 @@ import { reservasApi } from "@/modules/reservas/api/reservas";
 import { serviciosApi } from "@/modules/servicios/api/servicios";
 import { calificacionesApi } from "@/modules/calificaciones/api/calificaciones";
 import { agendaApi } from "@/modules/agenda/api/agenda";
+import { paquetesApi } from "@/modules/paquetes/api/paquetes";
 
 import { useAuthStore } from "@/modules/auth/stores/auth";
 
@@ -144,13 +145,26 @@ function volver() {
   router.push({ name: "Servicios" });
 }
 
-function abrirModal() {
+async function abrirModal() {
   fecha.value = "";
   horarioSeleccionado.value = "";
   horarios.value = [];
   diaSinDisponibilidad.value = false;
   errorReserva.value = null;
+  paqueteClienteIdSeleccionado.value = null;
+  paquetesDisponibles.value = [];
   showModal.value = true;
+
+  const servicioId = Number(route.params.id);
+
+  if (authStore.user?.role === "cliente") {
+    try {
+      const res = await paquetesApi.paraServicio(servicioId);
+      paquetesDisponibles.value = res.data ?? [];
+    } catch {
+      paquetesDisponibles.value = [];
+    }
+  }
 }
 
 async function confirmarReserva() {
