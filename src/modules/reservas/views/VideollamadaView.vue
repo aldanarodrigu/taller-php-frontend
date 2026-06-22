@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { onMounted, onUnmounted, ref } from "vue";
+import { onMounted, onUnmounted, ref, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { Room, RoomEvent, Track } from "livekit-client";
 import { videoApi } from "../api/video";
@@ -20,38 +20,43 @@ const videoRemoto = ref<HTMLVideoElement | null>(null);
 
 const room = new Room();
 
-function manejarTrack(track: any) {
+async function manejarTrack(track: any) {
   if (track.kind === Track.Kind.Video) {
     otroConectado.value = true;
-    track.attach(videoRemoto.value!);
+    await nextTick();
+    if (videoRemoto.value) track.attach(videoRemoto.value);
   } else if (track.kind === Track.Kind.Audio) {
     track.attach(); // livekit crea el elemento de audio solo
   }
 }
 
 onMounted(async () => {
+  // Registrar los handlers ANTES de conectar para no perder ningún track
+  room.on(RoomEvent.TrackSubscribed, (track) => {
+    manejarTrack(track);
+  });
+
+  room.on(RoomEvent.ParticipantDisconnected, () => {
+    otroConectado.value = false;
+  });
+
   try {
     const res = await videoApi.obtenerToken(reservaId);
     const { token, url } = res.data;
 
-    console.log('Conectando a LiveKit:', url);
     await room.connect(url, token);
-    console.log('Conectado a la sala');
 
     // publicar cámara y micrófono
-    console.log('Habilitando cámara y micrófono...');
     await room.localParticipant.enableCameraAndMicrophone();
-    console.log('Cámara y micrófono habilitados');
+
+    // Renderizar los elementos <video> antes de adjuntar
+    cargando.value = false;
+    await nextTick();
 
     // mostrar video local
-    await new Promise(r => setTimeout(r, 500));
     const pubLocal = room.localParticipant.getTrackPublication(Track.Source.Camera);
-    console.log('Publicación de cámara:', pubLocal);
-    if (pubLocal?.track) {
-      console.log('Track encontrado, adjuntando a videoLocal');
-      pubLocal.track.attach(videoLocal.value!);
-    } else {
-      console.warn('No hay track de cámara disponible');
+    if (pubLocal?.track && videoLocal.value) {
+      pubLocal.track.attach(videoLocal.value);
     }
 
     // si el otro ya estaba en la sala
@@ -60,19 +65,6 @@ onMounted(async () => {
         if (pub.track) manejarTrack(pub.track);
       });
     });
-
-    // cuando el otro se une
-    room.on(RoomEvent.TrackSubscribed, (track) => {
-      console.log('Track suscrito:', track.kind);
-      manejarTrack(track);
-    });
-
-    // cuando el otro se va
-    room.on(RoomEvent.ParticipantDisconnected, () => {
-      otroConectado.value = false;
-    });
-
-    cargando.value = false;
   } catch (e: any) {
     console.error('Error en videollamada:', e);
     error.value = e?.response?.data?.error ?? "No se pudo conectar a la videollamada.";
