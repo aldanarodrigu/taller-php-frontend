@@ -33,15 +33,24 @@ onMounted(async () => {
     const res = await videoApi.obtenerToken(reservaId);
     const { token, url } = res.data;
 
+    console.log('Conectando a LiveKit:', url);
     await room.connect(url, token);
+    console.log('Conectado a la sala');
 
     // publicar cámara y micrófono
+    console.log('Habilitando cámara y micrófono...');
     await room.localParticipant.enableCameraAndMicrophone();
+    console.log('Cámara y micrófono habilitados');
 
     // mostrar video local
+    await new Promise(r => setTimeout(r, 500));
     const pubLocal = room.localParticipant.getTrackPublication(Track.Source.Camera);
+    console.log('Publicación de cámara:', pubLocal);
     if (pubLocal?.track) {
+      console.log('Track encontrado, adjuntando a videoLocal');
       pubLocal.track.attach(videoLocal.value!);
+    } else {
+      console.warn('No hay track de cámara disponible');
     }
 
     // si el otro ya estaba en la sala
@@ -53,6 +62,7 @@ onMounted(async () => {
 
     // cuando el otro se une
     room.on(RoomEvent.TrackSubscribed, (track) => {
+      console.log('Track suscrito:', track.kind);
       manejarTrack(track);
     });
 
@@ -63,6 +73,7 @@ onMounted(async () => {
 
     cargando.value = false;
   } catch (e: any) {
+    console.error('Error en videollamada:', e);
     error.value = e?.response?.data?.error ?? "No se pudo conectar a la videollamada.";
     cargando.value = false;
   }
