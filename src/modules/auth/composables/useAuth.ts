@@ -7,7 +7,6 @@ import {
   registerRequest,
   completeGoogleRequest,
   meRequest,
-  logoutRequest,
 } from "@/modules/auth/api/auth";
 import type { AxiosError } from "axios";
 
