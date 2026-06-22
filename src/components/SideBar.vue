@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { RouterLink, useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/modules/auth/stores/auth";
-import { computed, ref, onMounted } from "vue";
+import { computed, ref } from "vue";
 import { useAuth } from "@/modules/auth/composables/useAuth";
 import { useNotificationStore } from "@/modules/notificaciones/store/notificacionStore";
 

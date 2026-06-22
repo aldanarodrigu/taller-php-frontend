@@ -1,4 +1,5 @@
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, computed, onMounted, onActivated, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { useReservasStore } from "@/modules/reservas/stores/reservas";

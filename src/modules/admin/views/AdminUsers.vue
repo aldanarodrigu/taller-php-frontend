@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from "vue";
 import { http } from "@/modules/auth/api/http";
-import { useAuthStore } from "@/modules/auth/stores/auth";
 
 type User = {
   id: number;
@@ -11,9 +10,6 @@ type User = {
   role: string;
   created_at: string;
 };
-
-const authStore = useAuthStore();
-const esAdmin = computed(() => authStore.user?.role === "admin");
 
 const users = ref<User[]>([]);
 const loading = ref(false);
