@@ -42,7 +42,7 @@ const guardar = async () => {
     });
     await authStore.refreshUser();
     router.push({ name: "ProfileOwn" });
-  } catch (e) {
+  } catch {
     error.value = "Error al guardar. Intentá de nuevo.";
   } finally {
     guardando.value = false;

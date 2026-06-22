@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const props = withDefaults(defineProps<{ label?: string }>(), {
+withDefaults(defineProps<{ label?: string }>(), {
   label: "Ingresar con Google",
 });
 

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { onMounted, ref } from "vue";
 import { http } from "@/modules/auth/api/http";
 import MapaSelector from "@/modules/servicios/components/MapaSelector.vue";

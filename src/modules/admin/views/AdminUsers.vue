@@ -13,7 +13,6 @@ type User = {
 };
 
 const authStore = useAuthStore();
-const esAdmin = computed(() => authStore.user?.role === "admin");
 
 const users = ref<User[]>([]);
 const loading = ref(false);

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useServiciosStore } from "@/modules/servicios/stores/servicios";
@@ -6,7 +7,6 @@ import MapaServicio from "@/modules/servicios/components/MapaServicio.vue";
 import { reservasApi } from "@/modules/reservas/api/reservas";
 import { serviciosApi } from "@/modules/servicios/api/servicios";
 import { calificacionesApi } from "@/modules/calificaciones/api/calificaciones";
-import { paquetesApi } from "@/modules/paquetes/api/paquetes";
 import { agendaApi } from "@/modules/agenda/api/agenda";
 
 import { useAuthStore } from "@/modules/auth/stores/auth";

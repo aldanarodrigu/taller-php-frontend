@@ -1,4 +1,5 @@
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, onMounted } from "vue";
 import { usePaquetesStore } from "@/modules/paquetes/stores/paquetes";
 import { http } from "@/modules/auth/api/http";

@@ -33,4 +33,5 @@ export const echo = new Echo({
   },
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 (window as any).Echo = echo;

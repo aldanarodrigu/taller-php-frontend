@@ -1,11 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from "vue";
 import { http } from "@/modules/auth/api/http";
-import { useRouter } from "vue-router";
 
-const router = useRouter();
-
-const irADetalle = (id: number) => {};
+const irADetalle = (_id: number) => {};
 
 const props = defineProps<{
   profesionalId?: number | null;

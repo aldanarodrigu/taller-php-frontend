@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { paquetesApi } from "@/modules/paquetes/api/paquetes";
