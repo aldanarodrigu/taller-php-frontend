@@ -60,6 +60,11 @@ const puedePagar = computed(() => estado.value === "confirmada" && rol.value ===
 
 const esOnline = computed(() => servicio.value?.modalidad === "virtual");
 
+// La videollamada se habilita para servicios virtuales e híbridos
+const permiteVideollamada = computed(() =>
+  ["virtual", "hibrida"].includes(servicio.value?.modalidad),
+);
+
 // Solo para servicios presenciales: el profesional inicia la sesión
 const puedeIniciar = computed(
   () =>
@@ -79,8 +84,7 @@ const puedeVideollamada = computed(() => {
   if (!store.reserva?.pago_id) return false;
   const estadoOk = ["pagada", "en_curso"].includes(estado.value);
   if (!estadoOk) return false;
-  if (estado.value === "en_curso") return esOnline.value;
-  return esOnline.value;
+  return permiteVideollamada.value;
 });
 
 const puedeReprogramar = computed(() =>

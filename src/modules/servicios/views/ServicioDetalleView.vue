@@ -373,7 +373,7 @@ async function confirmarReserva() {
       <div class="form-card col-mapa">
         <MapaServicio
           v-if="
-            store.servicio.modalidad === 'presencial' &&
+            ['presencial', 'hibrida'].includes(store.servicio.modalidad) &&
             store.servicio.latitud &&
             store.servicio.longitud
           "
